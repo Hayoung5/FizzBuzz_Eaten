@@ -31,6 +31,10 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
     
+    - name: Create S3 bucket if not exists
+      run: |
+        aws s3 mb s3://nutrition-app-frontend --region us-east-1 || echo "Bucket already exists or creation failed"
+    
     - name: Deploy to S3
       run: |
         aws s3 sync dist/ s3://nutrition-app-frontend --delete
