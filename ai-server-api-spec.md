@@ -31,13 +31,13 @@ curl -X POST "https://ai-server.example.com/api/v1/analyze-food" \
 ```json
 {
   "status": "success",
-  "data": {
-    "food_name": ["배추김치", "현미밥"],
-    "portion_size": ["1회 제공량 (100g)", "1공기 (210g)"],
-    "is_processed": [false, false],
-    "is_snack": [false, false],
-    "nutrition": [
-      {
+  "data": [
+    {
+      "food_name": "배추김치",
+      "portion_size": "1회 제공량 (100g)",
+      "is_processed": false,
+      "is_snack": false,
+      "nutrition": {
         "calories": 35,
         "carbohydrates": 7.0,
         "protein": 1.5,
@@ -45,8 +45,14 @@ curl -X POST "https://ai-server.example.com/api/v1/analyze-food" \
         "sugar": 1.0,
         "sodium": 800,
         "fiber": 2.5
-      },
-      {
+      }
+    },
+    {
+      "food_name": "현미밥",
+      "portion_size": "1공기 (210g)",
+      "is_processed": false,
+      "is_snack": false,
+      "nutrition": {
         "calories": 218,
         "carbohydrates": 44.8,
         "protein": 4.5,
@@ -55,19 +61,17 @@ curl -X POST "https://ai-server.example.com/api/v1/analyze-food" \
         "sodium": 2,
         "fiber": 3.5
       }
-    ]
-  }
+    }
+  ]
 }
 ```
 
-**Data Object**:
-- `food_name` (array): 인식된 음식명 배열
-- `portion_size` (array): 각 음식의 예상 제공량 정보 배열
-- `is_processed` (array): 각 음식의 가공식품 여부 배열 (true: 가공식품, false: 자연식품)
-- `is_snack` (array): 각 음식의 간식 여부 배열 (true: 간식, false: 주식)
-- `nutrition` (array): 각 음식의 영양정보 객체 배열
-
-**Note**: 모든 배열의 길이는 동일해야 하며, 각 인덱스는 같은 음식을 나타냅니다.
+**Data Array**: 인식된 음식들의 배열
+- `food_name` (string): 음식명
+- `portion_size` (string): 예상 제공량 정보
+- `is_processed` (boolean): 가공식품 여부 (true: 가공식품, false: 자연식품)
+- `is_snack` (boolean): 간식 여부 (true: 간식, false: 주식)
+- `nutrition` (object): 영양정보 객체
 
 **Nutrition Object**:
 - `calories` (number): 칼로리 (kcal)

@@ -2,7 +2,7 @@
  * 음식 분석 서비스
  * - AI 서버를 통한 음식 사진 분석
  * - 분석 결과 처리 및 데이터베이스 저장
- * - 배열 응답 처리 및 영양정보 총합 계산
+ * - 객체 배열 응답 처리 및 영양정보 총합 계산
  */
 
 const aiClient = require('../clients/aiClient');
@@ -28,39 +28,32 @@ const analyzeAndSaveFood = async (analysisData) => {
       throw new Error(aiResponse.message || 'AI 분석 실패');
     }
 
-    const { food_name, portion_size: portions, is_processed, is_snack, nutrition } = aiResponse.data;
+    const foodItems = aiResponse.data; // 객체 배열
 
-    // 배열 응답 처리
-    let finalFoodName, totalNutrition, finalIsProcessed, finalIsSnack;
-
-    if (Array.isArray(food_name) && food_name.length > 1) {
-      // 여러 음식인 경우: "배추김치 외 1개" 형식
-      finalFoodName = `${food_name[0]} 외 ${food_name.length - 1}개`;
-      
-      // 영양정보 총합 계산
-      totalNutrition = nutrition.reduce((sum, item) => ({
-        calories: sum.calories + item.calories,
-        carbohydrates: sum.carbohydrates + item.carbohydrates,
-        protein: sum.protein + item.protein,
-        fat: sum.fat + item.fat,
-        sugar: sum.sugar + item.sugar,
-        sodium: sum.sodium + item.sodium,
-        fiber: sum.fiber + item.fiber
-      }), {
-        calories: 0, carbohydrates: 0, protein: 0, fat: 0, sugar: 0, sodium: 0, fiber: 0
-      });
-
-      // 가공식품/간식 여부: 하나라도 true면 true
-      finalIsProcessed = is_processed.some(Boolean);
-      finalIsSnack = is_snack.some(Boolean);
-      
+    // 음식명 처리
+    let finalFoodName;
+    if (foodItems.length > 1) {
+      finalFoodName = `${foodItems[0].food_name} 외 ${foodItems.length - 1}개`;
     } else {
-      // 단일 음식인 경우
-      finalFoodName = Array.isArray(food_name) ? food_name[0] : food_name;
-      totalNutrition = Array.isArray(nutrition) ? nutrition[0] : nutrition;
-      finalIsProcessed = Array.isArray(is_processed) ? is_processed[0] : is_processed;
-      finalIsSnack = Array.isArray(is_snack) ? is_snack[0] : is_snack;
+      finalFoodName = foodItems[0].food_name;
     }
+
+    // 영양정보 총합 계산
+    const totalNutrition = foodItems.reduce((sum, item) => ({
+      calories: sum.calories + item.nutrition.calories,
+      carbohydrates: sum.carbohydrates + item.nutrition.carbohydrates,
+      protein: sum.protein + item.nutrition.protein,
+      fat: sum.fat + item.nutrition.fat,
+      sugar: sum.sugar + item.nutrition.sugar,
+      sodium: sum.sodium + item.nutrition.sodium,
+      fiber: sum.fiber + item.nutrition.fiber
+    }), {
+      calories: 0, carbohydrates: 0, protein: 0, fat: 0, sugar: 0, sodium: 0, fiber: 0
+    });
+
+    // 가공식품/간식 여부: 하나라도 true면 true
+    const finalIsProcessed = foodItems.some(item => item.is_processed);
+    const finalIsSnack = foodItems.some(item => item.is_snack);
 
     // 데이터베이스에 저장
     const logId = await FoodLog.create({
