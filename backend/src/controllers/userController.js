@@ -18,7 +18,7 @@ const User = require('../models/User');
  * @param {Object} req.body - {age: number, gender: string, activity: string}
  * @returns {Object} {user_id: number}
  */
-const createUser = (req, res) => {
+const createUser = async (req, res) => {
   const { age, gender, activity } = req.body;
   
   // 필수 필드 검증
@@ -26,13 +26,12 @@ const createUser = (req, res) => {
     return res.status(400).json({ error: 'Missing required fields' });
   }
   
-  // TODO: 추가 검증 로직
-  // - age: 숫자 범위 체크 (예: 1-120)
-  // - gender: enum 체크 ["male", "female"]
-  // - activity: enum 체크 ["low", "medium", "high"]
-  
-  const userId = User.create({ age, gender, activity });
-  res.json({ user_id: userId });
+  try {
+    const userId = await User.create({ age, gender, activity_level: activity });
+    res.json({ user_id: userId });
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
 };
 
 module.exports = { createUser };
