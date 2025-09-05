@@ -1,7 +1,10 @@
+import { useNavigate } from 'react-router-dom'
+
 const Statistics = () => {
+  const navigate = useNavigate()
+  
   const handlePatternAnalysis = () => {
-    console.log('식사 패턴 분석 클릭')
-    // TODO: 식사 패턴 분석 페이지로 이동
+    navigate('/pattern-analysis')
   }
 
   const handleAnalysisReport = () => {
