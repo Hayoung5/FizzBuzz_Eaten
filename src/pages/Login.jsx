@@ -10,7 +10,7 @@ const Login = () => {
       <section className="card">
         <header className="center mb-4">
           <div className="logo">🍴</div>
-          <h1 className="h1 mt-3">삼시 세끼 영양 분석</h1>
+          <h1 className="h1 mt-3">Eaten</h1>
           <p className="text-muted mt-2">AI로 분석하는 나만의 영양 관리 서비스</p>
         </header>
 
