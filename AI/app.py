@@ -516,5 +516,112 @@ def recommend_meal():
             "code": "RECOMMENDATION_ERROR"
         }), 500
 
+@app.route('/api/v1/analyze-barcode', methods=['POST'])
+def analyze_barcode():
+    tmp_file_path = None
+    try:
+        # 파일 검증
+        if 'image' not in request.files:
+            return jsonify({
+                "status": "error", 
+                "message": "Invalid image format or missing required fields",
+                "code": "INVALID_REQUEST"
+            }), 400
+
+        file = request.files['image']
+        
+        if not file or not allowed_file(file.filename):
+            return jsonify({
+                "status": "error",
+                "message": "Invalid image format or missing required fields", 
+                "code": "INVALID_REQUEST"
+            }), 400
+
+        # 임시 파일로 저장
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
+        tmp_file_path = tmp_file.name
+        file.save(tmp_file_path)
+        tmp_file.close()
+
+        # 바코드 분석 프롬프트
+        prompt = """
+        이미지를 분석하여 바코드가 있는지 확인하고, 바코드 번호를 추출해주세요.
+
+        다음 JSON 형식으로만 응답해주세요:
+        {
+            "has_barcode": true 또는 false,
+            "barcode_number": "바코드 번호 (숫자만, 바코드가 없으면 null)",
+            "barcode_type": "바코드 타입 (EAN-13, UPC-A 등, 없으면 null)"
+        }
+
+        주의사항:
+        - 바코드가 명확하게 보이지 않으면 has_barcode를 false로 설정
+        - 바코드 번호는 숫자만 추출 (공백, 하이픈 제거)
+        - JSON 형식을 정확히 지켜주세요
+        """
+        
+        result = bedrock_service.analyze_image(tmp_file_path, prompt)
+
+        # JSON 파싱 시도
+        start_idx = result.find('{')
+        end_idx = result.rfind('}') + 1
+        if start_idx != -1 and end_idx != 0:
+            json_str = result[start_idx:end_idx]
+            parsed_result = json.loads(json_str)
+            
+            # has_barcode가 true인 경우에만 바코드 번호 반환
+            if parsed_result.get('has_barcode'):
+                barcode = parsed_result.get('barcode_number')
+        
+            # Open Food Facts API 호출
+            api_url = f"https://world.openfoodfacts.org/api/v0/product/{barcode.strip()}"
+            response = requests.get(api_url)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if data['status'] == 1:
+                    product = data['product']
+                    
+                    # 필요한 정보 추출
+                    result = {
+                        "name": product.get('product_name', ''),
+                        "brand": product.get('brands', ''),
+                        "nutrition": {
+                            "calories": float(product.get('nutriments', {}).get('energy-kcal_100g', 0)),
+                            "carbohydrates": float(product.get('nutriments', {}).get('carbohydrates_100g', 0)),
+                            "protein": float(product.get('nutriments', {}).get('proteins_100g', 0)),
+                            "fat": float(product.get('nutriments', {}).get('fat_100g', 0)),
+                            "sugar": float(product.get('nutriments', {}).get('sugars_100g', 0)),
+                            "sodium": float(product.get('nutriments', {}).get('sodium_100g', 0)),
+                            "fiber": float(product.get('nutriments', {}).get('fiber_100g', 0))
+                        },
+                        "ingredients": product.get('ingredients_text', ''),
+                        "serving_size": product.get('serving_size', '100g')
+                    }
+                    
+                    return jsonify({
+                        "status": "success",
+                        "data": result
+                    })      
+
+    except Exception as e:
+        print(f"Error in analyze_barcode: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "status": "error",
+            "message": "바코드 분석 중 오류가 발생했습니다.",
+            "code": "ANALYSIS_SERVER_ERROR"
+        }), 500
+
+    finally:
+        # 임시 파일 안전하게 삭제
+        if tmp_file_path and os.path.exists(tmp_file_path):
+            try:
+                os.unlink(tmp_file_path)
+            except PermissionError:
+                pass
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
