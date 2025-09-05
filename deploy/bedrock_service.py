@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class BedrockService:
-    def __init__(self, model_id = 'anthropic.claude-3-5-sonnet-20240620-v1:0'):
+    def __init__(self, model_id = 'anthropic.claude-opus-4-20250514-v1:0'):
 
         self.model_id = model_id
         self.bedrock = boto3.client(

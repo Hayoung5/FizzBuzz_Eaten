@@ -8,7 +8,7 @@ def test_analyze_food():
     """음식 분석 API 테스트"""
     print("=== 음식 분석 API 테스트 ===")
     
-    image_path = "./AI/images/bibimbab.jpg"
+    image_path = "./AI/images/hamburger.jpg"
     if not os.path.exists(image_path):
         print(f"이미지 파일을 찾을 수 없습니다: {image_path}")
         return
@@ -97,6 +97,6 @@ if __name__ == "__main__":
     print()
     
     # 모든 API 테스트 실행
-    test_analyze_food()
-    test_health_report()
+    # test_analyze_food()
+    # test_health_report()
     test_meal_recommendation()

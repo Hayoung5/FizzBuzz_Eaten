@@ -14,7 +14,7 @@ def test_analyze_food():
     print("=== 음식 분석 API 테스트 ===")
     
     # 이미지 파일 경로 (images 폴더에서 찾기)
-    image_path = "images/tart.jpg"
+    image_path = "images/pizza_chicken.jpg"
     if not os.path.exists(image_path):
         print(f"이미지 파일을 찾을 수 없습니다: {image_path}")
         return

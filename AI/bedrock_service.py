@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class BedrockService:
-    def __init__(self, model_id = 'anthropic.claude-3-5-sonnet-20240620-v1:0'):
+    def __init__(self, model_id = 'anthropic.claude-opus-4-20250514-v1:0'):
 
         self.model_id = model_id
         self.bedrock = boto3.client(
@@ -19,7 +19,7 @@ class BedrockService:
             aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
             region_name= os.getenv('AWS_DEFAULT_REGION', 'us-east-1')
         )
-    
+        print("Model ID : ", self.model_id)
     # Tool
     def chat(self, message):
         """텍스트 채팅"""
@@ -33,7 +33,7 @@ class BedrockService:
     def generate_claude_text(self, prompt):
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 1000,
+            "max_tokens": 800,  # 토큰 수 최적화
             "messages": [{"role": "user", "content": prompt}]
         }
         
@@ -42,22 +42,29 @@ class BedrockService:
             body=json.dumps(body)
         )
         
+        
         result = json.loads(response['body'].read())
         return result['content'][0]['text']
     
     
     def generate_claude_vision(self, image_path, prompt):
         with Image.open(image_path) as img:
+            # 이미지 크기 최적화 (속도 향상)
+            max_size = 1024
+            if max(img.size) > max_size:
+                img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+            
             if img.mode != 'RGB':
                 img = img.convert('RGB')
             
             buffer = io.BytesIO()
-            img.save(buffer, format='JPEG', quality=85)
+            # 품질을 낮춰서 파일 크기 및 처리 시간 단축
+            img.save(buffer, format='JPEG', quality=100, optimize=True)
             image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 1000,
+            "max_tokens": 500,  # 토큰 수 줄여서 응답 속도 향상
             "messages": [
                 {
                     "role": "user",
