@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 import tempfile
 import time
 from botocore.exceptions import ClientError
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -19,6 +20,55 @@ ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_food_nutrition(food_name):
+    try:
+        base_url = "https://apis.data.go.kr/1471000/FoodNtrCpntDbInfo02/getFoodNtrCpntDbInq02"
+        params = {
+            "serviceKey": "392b322a06d187880079454523eef7608de24774e22bd29e0b17b7de3d96bc07",
+            "FOOD_NM_KR": food_name,
+            "numOfRows": 1,
+            "type": "json"
+        }
+
+        response = requests.get(base_url, params=params)
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        if data['header']['resultCode'] == '00' and len(data['body']['items']) > 0:
+            item = data['body']['items'][0]
+            
+            return {
+                "calories": float(item['AMT_NUM1']),
+                "carbohydrates": float(item['AMT_NUM6']),
+                "protein": float(item['AMT_NUM3']), 
+                "fat": float(item['AMT_NUM4']),
+                "sugar": float(item['AMT_NUM7']),
+                "sodium": float(item['AMT_NUM13']),
+                "fiber": float(item['AMT_NUM8']) if item['AMT_NUM8'] else 0
+            }
+        else:
+            return {
+            "calories": 0,
+            "carbohydrates": 0,
+            "protein": 0,
+            "fat": 0,
+            "sugar": 0,
+            "sodium": 0,
+            "fiber": 0
+        }
+
+    except requests.RequestException as e:
+        return {
+            "calories": 0,
+            "carbohydrates": 0,
+            "protein": 0,
+            "fat": 0,
+            "sugar": 0,
+            "sodium": 0,
+            "fiber": 0
+        }
 
 def get_dummy_nutrition(food_name):
     """음식명에 따른 더미 영양 정보 반환"""
@@ -175,7 +225,7 @@ def analyze_food():
             
             # 영양 정보 추가
             for food_item in parsed_result:
-                food_item['nutrition'] = get_dummy_nutrition(food_item['food_name'])
+                food_item['nutrition'] = get_food_nutrition(food_item['food_name'])
             
             return jsonify({
                 "status": "success",
