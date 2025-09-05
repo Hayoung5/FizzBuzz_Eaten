@@ -1,0 +1,57 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches: [ main, feature/backend ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy backend to EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # 백엔드 디렉토리로 이동 (없으면 생성)
+          mkdir -p /home/ec2-user/nutrition-backend
+          cd /home/ec2-user/nutrition-backend
+          
+          # 기존 프로세스 종료
+          pkill -f "python.*app.py" || true
+          pkill -f "gunicorn" || true
+          
+          # Git 저장소 초기화 또는 업데이트
+          if [ ! -d ".git" ]; then
+            git clone -b feature/backend https://github.com/Hayoung5/FizzBuzz_Eaten.git .
+          else
+            git fetch origin
+            git checkout feature/backend
+            git pull origin feature/backend
+          fi
+          
+          # Python 가상환경 설정
+          if [ ! -d "venv" ]; then
+            python3 -m venv venv
+          fi
+          source venv/bin/activate
+          
+          # 의존성 설치 (requirements.txt가 있다면)
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          fi
+          
+          # 백엔드 서버 실행
+          nohup python app.py > backend.log 2>&1 &
+          
+          # 프로세스 확인
+          sleep 3
+          ps aux | grep python | grep -v grep
+          
+          echo "Backend deployment completed"

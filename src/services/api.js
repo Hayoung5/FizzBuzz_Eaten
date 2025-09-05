@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://44.214.236.166:3001/api'
+const API_BASE_URL = 'http://44.214.236.166:3000/api'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -8,6 +8,10 @@ const api = axios.create({
 })
 
 export const userService = {
+  createUser: async (userData) => {
+    const response = await api.post('/user_info', userData)
+    return response.data
+  },
   registerUser: async (userData) => {
     const response = await api.post('/user_info', userData)
     return response.data
