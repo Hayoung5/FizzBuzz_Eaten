@@ -28,12 +28,14 @@ jobs:
         host: 44.214.236.166
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
+        timeout: 60s
+        command_timeout: 30s
         script: |
-          cd /home/ec2-user/nutrition-backend/backend
           pkill -f 'node.*app.js' || true
           sleep 2
-          npm install
-          nohup npm start > backend.log 2>&1 &
-          sleep 3
-          ps aux | grep 'node.*app.js' | grep -v grep || echo "Backend start failed"
-          echo "Node.js backend deployment completed!"
+          cd /home/ec2-user/nutrition-backend/backend || exit 1
+          npm install --production
+          nohup npm start > ../backend.log 2>&1 &
+          sleep 5
+          ps aux | grep 'node.*app.js' | grep -v grep
+          echo "Backend deployment completed"
