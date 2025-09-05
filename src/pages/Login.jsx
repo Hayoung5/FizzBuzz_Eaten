@@ -2,7 +2,7 @@ import '../styles/base.css'
 
 const Login = () => {
   const handleKakaoLogin = () => {
-    window.location.href = '/api/auth/kakao'
+    window.location.href = 'http://44.214.236.166:3000/api/auth/kakao'
   }
 
   return (

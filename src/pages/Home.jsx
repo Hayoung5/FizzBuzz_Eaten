@@ -7,9 +7,26 @@ const Home = () => {
   const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
-    // 백엔드 완성까지 무조건 로그인 페이지로 이동
-    navigate('/login')
-    setIsChecking(false)
+    const checkUser = async () => {
+      const userId = localStorage.getItem('userId')
+      
+      if (!userId) {
+        navigate('/login')
+        return
+      }
+
+      try {
+        await statisticsService.getStatistics(userId)
+        navigate('/dashboard')
+      } catch (error) {
+        localStorage.removeItem('userId')
+        navigate('/login')
+      } finally {
+        setIsChecking(false)
+      }
+    }
+
+    checkUser()
   }, [navigate])
 
   if (isChecking) {

@@ -6,15 +6,25 @@ const PatternAnalysis = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 목업 데이터 설정
-    setTimeout(() => {
-      const mockData = {
-        meal_snack: [3200, 800], // [끼니 칼로리, 간식 칼로리]
-        processed: [5, 15] // [가공식품 횟수, 자연식품 횟수]
+    const fetchData = async () => {
+      try {
+        const userId = localStorage.getItem('userId') || 2
+        const response = await statisticsService.getStatistics(userId)
+        setData(response)
+      } catch (error) {
+        console.error('통계 데이터 로드 실패:', error)
+        // 실패 시 목업 데이터 사용
+        setData({
+          meal_snack: [3200, 800],
+          processed: [5, 15],
+          times: ['2025-09-05T08:30:00', '2025-09-05T12:45:00', '2025-09-05T19:20:00']
+        })
+      } finally {
+        setLoading(false)
       }
-      setData(mockData)
-      setLoading(false)
-    }, 1000)
+    }
+
+    fetchData()
   }, [])
 
   useEffect(() => {
