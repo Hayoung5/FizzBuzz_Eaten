@@ -52,9 +52,14 @@ jobs:
         host: 44.214.236.166
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
+        command_timeout: 30s
         script: |
           pkill -f 'serve.*3000' || true
+          sleep 1
           cd ~/nutrition-app
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
           nohup serve -s dist -l 3000 > server.log 2>&1 &
-          sleep 2
+          sleep 3
+          ps aux | grep serve | grep 3000 || echo "Server start failed"
           echo "Deployment completed!"
