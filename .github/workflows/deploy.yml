@@ -24,37 +24,24 @@ jobs:
     - name: Build
       run: npm run build
     
-    - name: Create deployment package
-      run: |
-        cd dist
-        tar -czf ../deploy.tar.gz .
-        cd ..
-    
-    - name: Deploy to EC2
-      uses: appleboy/scp-action@v0.1.4
+    - name: Deploy with rsync
+      uses: burnett01/rsync-deployments@6.0.0
       with:
-        host: 44.214.236.166
-        username: ec2-user
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: "deploy.tar.gz"
-        target: "~/"
+        switches: -avzr --delete
+        path: dist/
+        remote_path: /home/ec2-user/nutrition-app/dist/
+        remote_host: 44.214.236.166
+        remote_user: ec2-user
+        remote_key: ${{ secrets.EC2_SSH_KEY }}
     
-    - name: Extract and restart
+    - name: Restart server
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: 44.214.236.166
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
-        timeout: 60s
-        script_stop: true
+        timeout: 10s
         script: |
           pkill -f 'serve.*3000' || true
-          cd ~/nutrition-app
-          rm -rf dist_old && mv dist dist_old 2>/dev/null || true
-          mkdir -p dist && cd dist
-          tar -xzf ~/deploy.tar.gz
-          cd ~/nutrition-app
-          export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-          serve -s dist -l 3000 > /dev/null 2>&1 &
-          rm ~/deploy.tar.gz
-          echo "Deployment completed successfully!"
+          cd ~/nutrition-app && nohup serve -s dist -l 3000 &
+          echo "Server restarted"
