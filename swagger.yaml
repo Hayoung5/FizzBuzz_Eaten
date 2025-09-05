@@ -375,10 +375,19 @@ paths:
               schema:
                 type: object
                 properties:
-                  reco:
+                  menu:
+                    type: array
+                    items:
+                      type: string
+                    description: 추천 메뉴 목록
+                    example: 
+                      - "현미밥 + 닭가슴살 구이 + 브로콜리 찜 + 토마토 샐러드"
+                      - "통밀빵 샌드위치 (닭가슴살, 아보카도, 채소) + 당근 스틱"
+                      - "연어 스테이크 + 퀴노아 + 구운 아스파라거스 + 키위"
+                  reason:
                     type: string
-                    description: 맞춤형 식사 추천
-                    example: "다음 끼니에는 단백질이 풍부한 식품(두부, 계란, 생선)을 포함하면 좋습니다.\n최근 3일간 나트륨 섭취가 높으니 저염 식품을 선택해보세요."
+                    description: 추천 이유 및 분석 결과
+                    example: "사용자의 식사 기록을 분석한 결과, 전반적으로 권장량에 근접하지만 단백질과 나트륨 섭취가 약간 높은 편입니다. 또한 가공식품 섭취 빈도가 높아 자연식 위주의 메뉴를 제안했습니다."
         '400':
           description: user_id 필수
         '404':

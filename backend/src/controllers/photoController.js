@@ -36,19 +36,12 @@ const analyzePhoto = async (req, res) => {
   // - 이미지 파일 형식/크기 검증
   
   try {
-    // AI 서버를 통한 음식 사진 분석
-    const analysisResult = await foodAnalysisService.analyzeFoodPhoto(
-      req.file, 
-      time, 
-      portion_size
-    );
-    
-    // 분석 결과를 음식 로그에 저장
-    FoodLog.add(user_id, {
+    // AI 서버를 통한 음식 사진 분석 및 저장
+    const analysisResult = await foodAnalysisService.analyzeAndSaveFood({
+      user_id,
       time,
-      ...analysisResult,
-      isProcessed: Math.random() > 0.5, // TODO: 실제 가공식품 판별 로직
-      isSnack: Math.random() > 0.7      // TODO: 실제 간식 판별 로직
+      portion_size,
+      imagePath: req.file.path
     });
     
     // 성공 응답 (프론트엔드 API 스펙에 맞춤)

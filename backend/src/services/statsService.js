@@ -163,13 +163,27 @@ const generateHealthReport = async (userId) => {
       Math.round((avgSodium / statsData.reco_sodium) * 100)      // 나트륨
     ];
 
-    // AI 서버 구현 전까지 목업 데이터 + 실제 ratio
-    return {
-      meal_pattern: "식사 시간이 비교적 규칙적이나, 늦은 저녁 섭취가 잦습니다.",
-      processed_snack_ratio: "최근 7일간 가공식품 비율은 55%, 간식 비율은 30%입니다.",
-      reco: "다음 끼니에는 단백질이 풍부한 식품(두부, 계란, 생선)을 포함하면 좋습니다.",
-      ratio: ratio
-    };
+    try {
+      // AI 서버에 건강 리포트 생성 요청
+      const aiResponse = await aiClient.generateHealthReport(statsData);
+      
+      // AI 응답에 실제 계산된 ratio 추가
+      return {
+        ...aiResponse.data,
+        ratio: ratio
+      };
+      
+    } catch (aiError) {
+      console.error('AI Health Report Error:', aiError.message);
+      
+      // AI 서버 오류시 목업 데이터 + 실제 ratio
+      return {
+        meal_pattern: "식사 시간이 비교적 규칙적이나, 늦은 저녁 섭취가 잦습니다.",
+        processed_snack_ratio: "최근 7일간 가공식품 비율은 55%, 간식 비율은 30%입니다.",
+        reco: "다음 끼니에는 단백질이 풍부한 식품(두부, 계란, 생선)을 포함하면 좋습니다.",
+        ratio: ratio
+      };
+    }
     
   } catch (error) {
     console.error('Health report generation error:', error.message);
@@ -199,27 +213,34 @@ const getMealRecommendation = async (userId) => {
     // 최근 3일간 데이터 수집 (AI 서버 스펙에 맞춤)
     const recentData = _getRecentMealData(userId);
     
-    // AI 서버에 식사 추천 요청
-    const recommendation = await aiClient.recommendMeal(recentData);
-    
-    // TODO: 추천 결과 개인화
-    // - 사용자 선호도 반영
-    // - 알레르기 정보 고려
-    // - 지역별 음식 추천
-    
-    return recommendation.reco;
+    try {
+      // AI 서버에 식사 추천 요청
+      const aiResponse = await aiClient.recommendMeal(recentData);
+      return {
+        menu: aiResponse.data.menu,
+        reason: aiResponse.data.reason
+      };
+      
+    } catch (aiError) {
+      console.error('AI Meal Recommendation Error:', aiError.message);
+      
+      // AI 서버 오류시 기본 추천 반환
+      return {
+        menu: [
+          "현미밥 + 구운 닭가슴살 + 브로콜리 + 방울토마토",
+          "통밀빵 샌드위치 + 아보카도 + 채소 샐러드",
+          "연어구이 + 퀴노아 + 구운 채소"
+        ],
+        reason: "건강한 식습관을 위해 다양한 영양소를 골고루 섭취하고, 가공식품을 줄이며 자연식 위주의 식단을 권장합니다."
+      };
+    }
     
   } catch (error) {
     console.error('Meal recommendation error:', error.message);
-    
-    // AI 서버 오류시 기본 추천 반환
-    const defaultRecommendations = [
-      "건강한 식습관을 위해 다양한 영양소를 골고루 섭취하세요.",
-      "충분한 수분 섭취와 규칙적인 식사 시간을 유지하세요.",
-      "신선한 채소와 과일을 충분히 드시고 가공식품은 줄여보세요."
-    ];
-    
-    return defaultRecommendations[Math.floor(Math.random() * defaultRecommendations.length)];
+    return {
+      menu: ["균형잡힌 식단을 위해 단백질, 탄수화물, 채소를 골고루 섭취하세요."],
+      reason: "건강한 식습관을 위해 규칙적인 식사와 균형잡힌 영양소 섭취를 권장합니다."
+    };
   }
 };
 

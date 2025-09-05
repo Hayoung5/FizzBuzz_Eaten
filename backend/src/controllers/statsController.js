@@ -76,15 +76,20 @@ const getReport = async (req, res) => {
 const getMealRecommendation = async (req, res) => {
   const { user_id } = req.query;
   
-  if (!user_id || !User.findById(user_id)) {
-    return res.status(404).json({ error: 'User not found' });
+  if (!user_id) {
+    return res.status(400).json({ error: 'user_id is required' });
   }
   
   try {
-    // AI 서버를 통한 개인화된 식사 추천
+    // 사용자 존재 확인
+    const user = await User.findById(user_id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // AI 기반 식사 추천
     const recommendation = await statsService.getMealRecommendation(user_id);
-    
-    res.json({ reco: recommendation });
+    res.json(recommendation);
   } catch (error) {
     console.error('Meal recommendation error:', error.message);
     res.status(500).json({ error: 'Failed to get meal recommendation' });
