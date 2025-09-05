@@ -9,7 +9,7 @@ const Statistics = () => {
 
   const handleAnalysisReport = () => {
     console.log('식사 분석 리포트 클릭')
-    // TODO: 식사 분석 리포트 페이지로 이동
+    navigate('/report')
   }
 
   return (

@@ -8,6 +8,7 @@ import Report from './pages/Report'
 import UserSetup from './pages/UserSetup'
 import Login from './pages/Login'
 import PatternAnalysis from './pages/PatternAnalysis'
+import MealRecommendation from './pages/MealRecommendation'
 
 function App() {
   return (
@@ -19,9 +20,10 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/setup" element={<UserSetup />} />
           <Route path="/pattern-analysis" element={<PatternAnalysis />} />
+          <Route path="/report" element={<Report />} />
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/statistics" element={<Statistics />} />
-          <Route path="/report" element={<Report />} />
+          <Route path="/meal-recommendation" element={<MealRecommendation />} />
         </Routes>
       </Layout>
     </Router>
