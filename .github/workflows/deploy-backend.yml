@@ -22,20 +22,15 @@ jobs:
         remote_user: ec2-user
         remote_key: ${{ secrets.EC2_SSH_KEY }}
     
-    - name: Restart Node.js backend server
+    - name: Setup and start backend
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: 44.214.236.166
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
-        timeout: 60s
-        command_timeout: 30s
         script: |
-          pkill -f 'node.*app.js' || true
-          sleep 2
-          cd /home/ec2-user/nutrition-backend/backend || exit 1
-          npm install --production
-          nohup npm start > ../backend.log 2>&1 &
-          sleep 5
-          ps aux | grep 'node.*app.js' | grep -v grep
-          echo "Backend deployment completed"
+          pkill -f node || true
+          cd /home/ec2-user/nutrition-backend/backend
+          npm install
+          nohup node src/app.js > backend.log 2>&1 &
+          echo "Backend started"
