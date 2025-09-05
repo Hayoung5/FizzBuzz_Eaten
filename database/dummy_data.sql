@@ -1,3 +1,7 @@
+-- 사용자 더미 데이터 (OAuth 사용자 포함)
+INSERT INTO users (id, age, gender, activity, reco_calories, reco_carbs, reco_protein, reco_fat, reco_sugar, reco_sodium, reco_fiber, oauth_provider, oauth_id, email, name) VALUES
+(1, 25, 'male', 'high', 2800, 360, 65, 75, 40, 2000, 25, 'kakao', '4431218711', null, '미연동 계정');
+
 -- user_id 1의 더미 식사 기록 데이터
 
 INSERT INTO food_logs (user_id, food_name, calories, protein, carbs, fat, fiber, sodium, sugar, is_processed, is_snack, logged_at) VALUES

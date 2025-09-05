@@ -7,11 +7,16 @@ CREATE TABLE users (
     gender ENUM('male', 'female') NOT NULL,
     activity ENUM('low', 'moderate', 'high') NOT NULL,
     reco_calories INT,
+    reco_carbs INT,
     reco_protein INT,
     reco_fat INT,
     reco_sugar INT,
     reco_sodium INT,
     reco_fiber INT,
+    oauth_provider VARCHAR(20),
+    oauth_id VARCHAR(100),
+    email VARCHAR(255),
+    name VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
