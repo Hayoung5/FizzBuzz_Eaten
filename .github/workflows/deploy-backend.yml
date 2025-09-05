@@ -22,14 +22,24 @@ jobs:
         remote_user: ec2-user
         remote_key: ${{ secrets.EC2_SSH_KEY }}
     
-    - name: Copy .env file
-      uses: appleboy/scp-action@v0.1.7
+    - name: Create .env file
+      uses: appleboy/ssh-action@v0.1.7
       with:
         host: 44.214.236.166
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "backend/.env"
-        target: "/home/ec2-user/nutrition-backend/"
+        script: |
+          cd /home/ec2-user/nutrition-backend/backend
+          cat > .env << 'EOF'
+          DB_HOST=localhost
+          DB_USER=root
+          DB_PASSWORD=
+          DB_NAME=fizzbuzz_eaten
+          PORT=3000
+          AI_SERVER_URL=http://localhost:5000
+          KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          EOF
     
     - name: Start backend
       uses: appleboy/ssh-action@v0.1.7
