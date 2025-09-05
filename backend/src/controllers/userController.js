@@ -3,11 +3,6 @@
  * - 사용자 등록 요청 처리
  * - 요청 데이터 검증
  * - 응답 형식 관리
- * 
- * TODO: 실제 구현시 추가할 기능들
- * - 입력 데이터 상세 검증 (나이 범위, 성별 enum 등)
- * - 에러 처리 강화
- * - 로깅 추가
  */
 
 const User = require('../models/User');
@@ -28,10 +23,54 @@ const createUser = async (req, res) => {
   
   try {
     const userId = await User.create({ age, gender, activity });
-    res.json({ user_id: userId });
+    
+    // 생성된 사용자 정보 조회하여 name 포함하여 응답
+    const user = await User.findById(userId);
+    
+    res.json({ 
+      user_id: userId,
+      name: user.name || null
+    });
   } catch (error) {
     res.status(500).json({ error: 'Database error' });
   }
 };
 
-module.exports = { createUser };
+/**
+ * 사용자 정보 조회 API
+ * GET /api/user_info/:id
+ * @param {string} req.params.id - 사용자 ID
+ * @returns {Object} 사용자 정보 (name 포함)
+ */
+const getUser = async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const user = await User.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // 사용자 정보 반환 (name 포함)
+    res.json({
+      id: user.id,
+      name: user.name || null,
+      age: user.age,
+      gender: user.gender,
+      activity: user.activity,
+      reco_calories: user.reco_calories,
+      reco_carbs: user.reco_carbs,
+      reco_protein: user.reco_protein,
+      reco_fat: user.reco_fat,
+      reco_sugar: user.reco_sugar,
+      reco_sodium: user.reco_sodium,
+      reco_fiber: user.reco_fiber
+    });
+  } catch (error) {
+    console.error('Get user error:', error.message);
+    res.status(500).json({ error: 'Failed to get user information' });
+  }
+};
+
+module.exports = { createUser, getUser };

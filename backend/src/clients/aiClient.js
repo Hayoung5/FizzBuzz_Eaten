@@ -44,6 +44,7 @@ class AIClient {
       }
 
     } catch (error) {
+      console.log(error)
       console.error('AI Food Analysis Error:', error.message);
       
       if (error.response?.data?.code) {

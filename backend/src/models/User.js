@@ -11,29 +11,43 @@ class User {
         const [result] = await pool.execute(
             `INSERT INTO users (age, gender, activity, reco_calories, reco_carbs, reco_protein, reco_fat, reco_sugar, reco_sodium, reco_fiber) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [age, gender, activity, recommendations.calories, recommendations.carbohydrates, recommendations.protein, recommendations.fat, 
-             recommendations.sugar, recommendations.sodium, recommendations.fiber]
+            [age, gender, activity, recommendations.calories, recommendations.carbohydrates, 
+             recommendations.protein, recommendations.fat, recommendations.sugar, 
+             recommendations.sodium, recommendations.fiber]
         );
         return result.insertId;
     }
 
     static async findById(id) {
-        const [rows] = await pool.execute('SELECT * FROM users WHERE id = ?', [id]);
+        const [rows] = await pool.execute(
+            'SELECT * FROM users WHERE id = ?',
+            [id]
+        );
         return rows[0];
     }
 
-    static async update(id, userData) {
-        const { age, gender, activity } = userData;
+    static async findByOAuth(provider, oauthId) {
+        const [rows] = await pool.execute(
+            'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ?',
+            [provider, oauthId]
+        );
+        return rows[0];
+    }
+
+    static async createOAuthUser(userData) {
+        const { oauth_provider, oauth_id, email, name, age, gender, activity } = userData;
         
-        // 권장량 재계산
+        // 권장량 계산
         const recommendations = this.calculateRecommendations(age, gender, activity);
         
-        await pool.execute(
-            `UPDATE users SET age = ?, gender = ?, activity = ?, reco_calories = ?, reco_carbs = ?, reco_protein = ?, reco_fat = ?, reco_sugar = ?, reco_sodium = ?, reco_fiber = ? 
-             WHERE id = ?`,
-            [age, gender, activity, recommendations.calories, recommendations.carbohydrates, recommendations.protein, recommendations.fat,
-             recommendations.sugar, recommendations.sodium, recommendations.fiber, id]
+        const [result] = await pool.execute(
+            `INSERT INTO users (oauth_provider, oauth_id, email, name, age, gender, activity, reco_calories, reco_carbs, reco_protein, reco_fat, reco_sugar, reco_sodium, reco_fiber) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [oauth_provider, oauth_id, email, name, age, gender, activity, 
+             recommendations.calories, recommendations.carbohydrates, recommendations.protein, 
+             recommendations.fat, recommendations.sugar, recommendations.sodium, recommendations.fiber]
         );
+        return result.insertId;
     }
 
     static calculateRecommendations(age, gender, activity) {
@@ -56,29 +70,41 @@ class User {
         };
 
         const activityLevel = activityMap[activity] || 'medium';
-        const data = nutritionData[gender]?.[ageGroup];
-
-        if (!data) {
-            // 기본값 반환
-            return {
-                calories: 2000,
-                carbohydrates: 300,
-                protein: 50,
-                fat: 60,
-                sugar: 30,
-                sodium: 1800,
-                fiber: 20
-            };
+        
+        // 안전한 데이터 접근
+        const genderData = nutritionData[gender];
+        if (!genderData) {
+            console.log(`Gender data not found for: ${gender}, using default`);
+            return this.getDefaultRecommendations();
+        }
+        
+        const ageData = genderData[ageGroup];
+        if (!ageData) {
+            console.log(`Age group data not found for: ${gender}/${ageGroup}, using default`);
+            return this.getDefaultRecommendations();
         }
 
+        // 각 영양소별 안전한 접근
         return {
-            calories: data.calories[activityLevel],
-            carbohydrates: data.carbohydrates,
-            protein: data.protein,
-            fat: data.fat,
-            sugar: data.sugars,
-            sodium: data.sodium,
-            fiber: data.fiber
+            calories: ageData.calories?.[activityLevel] || 2000,
+            carbohydrates: ageData.carbohydrates?.[activityLevel] || 300,
+            protein: ageData.protein?.[activityLevel] || 50,
+            fat: ageData.fat?.[activityLevel] || 60,
+            sugar: ageData.sugar?.[activityLevel] || 30,
+            sodium: ageData.sodium?.[activityLevel] || 2000,
+            fiber: ageData.fiber?.[activityLevel] || 25
+        };
+    }
+
+    static getDefaultRecommendations() {
+        return {
+            calories: 2000,
+            carbohydrates: 300,
+            protein: 50,
+            fat: 60,
+            sugar: 30,
+            sodium: 2000,
+            fiber: 25
         };
     }
 }

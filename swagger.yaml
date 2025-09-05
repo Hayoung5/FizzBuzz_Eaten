@@ -50,6 +50,11 @@ paths:
                   user_id:
                     type: integer
                     example: 1
+                  name:
+                    type: string
+                    nullable: true
+                    description: 사용자 이름 (OAuth 사용자의 경우 카카오 이름, 일반 사용자는 null)
+                    example: null
         '400':
           description: 필수 필드 누락
           content:
@@ -84,6 +89,11 @@ paths:
                   id:
                     type: integer
                     example: 1
+                  name:
+                    type: string
+                    nullable: true
+                    description: 사용자 이름
+                    example: "미연동 계정"
                   age:
                     type: integer
                     example: 25
@@ -228,6 +238,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  name:
+                    type: string
+                    nullable: true
+                    description: 사용자 이름
+                    example: "미연동 계정"
                   times:
                     type: array
                     items:
@@ -332,6 +347,11 @@ paths:
               schema:
                 type: object
                 properties:
+                  name:
+                    type: string
+                    nullable: true
+                    description: 사용자 이름
+                    example: "미연동 계정"
                   meal_pattern:
                     type: string
                     description: 식사 패턴 분석
@@ -393,7 +413,137 @@ paths:
         '404':
           description: 사용자를 찾을 수 없음
 
+  /api/auth/kakao:
+    get:
+      summary: 카카오 로그인 시작
+      description: 사용자를 카카오 로그인 페이지로 리다이렉트
+      responses:
+        '302':
+          description: 카카오 로그인 페이지로 리다이렉트
+
+  /api/auth/complete-signup:
+    post:
+      summary: 신규 사용자 추가 정보 등록
+      description: 카카오 로그인 후 신규 사용자의 추가 정보를 등록하고 JWT 토큰 발급
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oauth_provider
+                - oauth_id
+                - age
+                - gender
+                - activity
+              properties:
+                oauth_provider:
+                  type: string
+                  example: "kakao"
+                oauth_id:
+                  type: string
+                  example: "4431218711"
+                email:
+                  type: string
+                  nullable: true
+                  example: null
+                name:
+                  type: string
+                  example: "미연동 계정"
+                age:
+                  type: integer
+                  example: 25
+                gender:
+                  type: string
+                  enum: [male, female]
+                  example: "male"
+                activity:
+                  type: string
+                  enum: [low, moderate, high]
+                  example: "high"
+      responses:
+        '200':
+          description: 회원가입 완료
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  token:
+                    type: string
+                    description: JWT 토큰
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user_id:
+                    type: integer
+                    example: 2
+        '400':
+          description: 필수 필드 누락
+
+  /api/auth/me:
+    get:
+      summary: 내 정보 조회
+      description: JWT 토큰으로 현재 로그인한 사용자 정보 조회
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 사용자 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 2
+                  name:
+                    type: string
+                    nullable: true
+                    example: "미연동 계정"
+                  email:
+                    type: string
+                    nullable: true
+                    example: null
+                  age:
+                    type: integer
+                    example: 25
+                  gender:
+                    type: string
+                    example: "male"
+                  activity:
+                    type: string
+                    example: "high"
+        '401':
+          description: 토큰 없음 또는 유효하지 않음
+        '403':
+          description: 토큰 만료
+
+  /api/auth/logout:
+    post:
+      summary: 로그아웃
+      description: 로그아웃 (JWT는 stateless이므로 클라이언트에서 토큰 삭제)
+      responses:
+        '200':
+          description: 로그아웃 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Error:
       type: object

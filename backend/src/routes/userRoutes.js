@@ -12,11 +12,14 @@
  */
 
 const express = require('express');
-const { createUser } = require('../controllers/userController');
+const { createUser, getUser } = require('../controllers/userController');
 
 const router = express.Router();
 
 // 사용자 정보 등록
 router.post('/user_info', createUser);
+
+// 사용자 정보 조회
+router.get('/user_info/:id', getUser);
 
 module.exports = router;

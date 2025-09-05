@@ -35,7 +35,12 @@ const getStatistics = async (req, res) => {
 
     // 실제 DB 데이터 기반 통계 조회
     const stats = await statsService.getUserStatistics(user_id);
-    res.json(stats);
+    
+    // name 포함하여 응답
+    res.json({
+      ...stats,
+      name: user.name || null
+    });
   } catch (error) {
     console.error('Statistics error:', error.message);
     res.status(500).json({ error: 'Failed to get statistics' });
@@ -50,18 +55,25 @@ const getStatistics = async (req, res) => {
 const getReport = async (req, res) => {
   const { user_id } = req.query;
   
-  if (!user_id || !User.findById(user_id)) {
-    return res.status(404).json({ error: 'User not found' });
+  if (!user_id) {
+    return res.status(400).json({ error: 'user_id is required' });
   }
   
   try {
+    // 사용자 존재 확인
+    const user = await User.findById(user_id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     // AI 서버를 통한 건강 리포트 생성
     const report = await statsService.generateHealthReport(user_id);
     
-    // ratio 필드 추가 (프론트엔드 API 스펙에 맞춤)
-    report.ratio = [90, 75, 80, 120, 110]; // TODO: 실제 계산된 비율 사용
-    
-    res.json(report);
+    // name 포함하여 응답
+    res.json({
+      ...report,
+      name: user.name || null
+    });
   } catch (error) {
     console.error('Health report error:', error.message);
     res.status(500).json({ error: 'Failed to generate health report' });
