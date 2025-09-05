@@ -71,36 +71,23 @@ const Analysis = () => {
   const handleConfirm = async () => {
     setIsAnalyzing(true)
     
-    try {
-      const userId = localStorage.getItem('userId') || 1234
-      const formData = new FormData()
-      formData.append('user_id', userId)
-      formData.append('time', new Date().toISOString())
-      formData.append('photo', selectedFile)
-      
-      const response = await photoService.analyzePhoto(formData)
-      
-      // API 응답을 컴포넌트 형식에 맞게 변환
-      const result = {
-        name: response.food_name,
-        serving: response.portion_size,
-        calories: response.nutrition.calories,
-        carbs: response.nutrition.carbohydrates,
-        protein: response.nutrition.protein,
-        fat: response.nutrition.fat,
-        sugar: response.nutrition.sugar,
-        sodium: response.nutrition.sodium,
-        fiber: response.nutrition.fiber
+    // 목업: 2초 후 가짜 분석 결과 반환
+    setTimeout(() => {
+      const mockResult = {
+        name: '김치찌개 + 밥',
+        serving: '1인분',
+        calories: 520,
+        carbs: 65,
+        protein: 18,
+        fat: 12,
+        sugar: 8,
+        sodium: 1200,
+        fiber: 4
       }
       
-      setAnalysisResult(result)
-    } catch (error) {
-      console.error('분석 실패:', error)
-      setModalMessage('음식 분석에 실패했습니다. 다시 시도해주세요.')
-      setShowModal(true)
-    } finally {
+      setAnalysisResult(mockResult)
       setIsAnalyzing(false)
-    }
+    }, 2000)
   }
 
   // 분석 결과 화면
