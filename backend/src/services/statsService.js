@@ -145,22 +145,36 @@ const getUserStatistics = async (userId) => {
 const generateHealthReport = async (userId) => {
   try {
     // 사용자 통계 데이터 수집
-    const statsData = getUserStatistics(userId);
+    const statsData = await getUserStatistics(userId);
     
-    // AI 서버에 건강 리포트 생성 요청
-    const healthReport = await aiClient.generateHealthReport(statsData);
-    
-    // TODO: 리포트 결과 후처리
-    // - 개인화 정보 추가
-    // - 리포트 히스토리 저장
-    // - 개선 추이 분석
-    
-    return healthReport;
+    // 7일간 평균 섭취량 계산
+    const avgCalories = statsData.cal_log.reduce((sum, val) => sum + val, 0) / 7;
+    const avgProtein = statsData.protein_log.reduce((sum, val) => sum + val, 0) / 7;
+    const avgSugar = statsData.sugar_log.reduce((sum, val) => sum + val, 0) / 7;
+    const avgCarbs = statsData.carbo_log.reduce((sum, val) => sum + val, 0) / 7;
+    const avgSodium = statsData.sodium_log.reduce((sum, val) => sum + val, 0) / 7;
+
+    // 권장량 대비 비율 계산 (%)
+    const ratio = [
+      Math.round((avgCalories / statsData.reco_cal) * 100),      // 칼로리
+      Math.round((avgProtein / statsData.reco_protein) * 100),   // 단백질
+      Math.round((avgSugar / statsData.reco_sugar) * 100),       // 당
+      Math.round((avgCarbs / statsData.reco_carbo) * 100),       // 탄수화물
+      Math.round((avgSodium / statsData.reco_sodium) * 100)      // 나트륨
+    ];
+
+    // AI 서버 구현 전까지 목업 데이터 + 실제 ratio
+    return {
+      meal_pattern: "식사 시간이 비교적 규칙적이나, 늦은 저녁 섭취가 잦습니다.",
+      processed_snack_ratio: "최근 7일간 가공식품 비율은 55%, 간식 비율은 30%입니다.",
+      reco: "다음 끼니에는 단백질이 풍부한 식품(두부, 계란, 생선)을 포함하면 좋습니다.",
+      ratio: ratio
+    };
     
   } catch (error) {
     console.error('Health report generation error:', error.message);
     
-    // AI 서버 오류시 기본 리포트 반환
+    // 에러시 기본 리포트 반환
     return {
       meal_pattern: "식사 패턴 분석 중 오류가 발생했습니다.",
       processed_snack_ratio: "가공식품 비율 분석을 완료할 수 없습니다.",
