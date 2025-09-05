@@ -2,10 +2,10 @@ const { pool } = require('../config/database');
 
 class User {
     static async create(userData) {
-        const { age, gender, activity_level } = userData;
+        const { age, gender, activity } = userData;
         const [result] = await pool.execute(
-            'INSERT INTO users (age, gender, activity_level) VALUES (?, ?, ?)',
-            [age, gender, activity_level]
+            'INSERT INTO users (age, gender, activity) VALUES (?, ?, ?)',
+            [age, gender, activity]
         );
         return result.insertId;
     }
@@ -16,10 +16,10 @@ class User {
     }
 
     static async update(id, userData) {
-        const { age, gender, activity_level } = userData;
+        const { age, gender, activity } = userData;
         await pool.execute(
-            'UPDATE users SET age = ?, gender = ?, activity_level = ? WHERE id = ?',
-            [age, gender, activity_level, id]
+            'UPDATE users SET age = ?, gender = ?, activity = ? WHERE id = ?',
+            [age, gender, activity, id]
         );
     }
 }

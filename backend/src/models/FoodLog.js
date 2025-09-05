@@ -1,18 +1,18 @@
-const db = require('../config/database');
+const { pool } = require('../config/database');
 
 class FoodLog {
     static async create(logData) {
-        const { user_id, food_name, calories, protein, carbs, fat, fiber, sodium, sugar, image_path, meal_time } = logData;
-        const [result] = await db.execute(
-            `INSERT INTO food_logs (user_id, food_name, calories, protein, carbs, fat, fiber, sodium, sugar, image_path, meal_time) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [user_id, food_name, calories, protein, carbs, fat, fiber || 0, sodium || 0, sugar || 0, image_path, meal_time || 'snack']
+        const { user_id, food_name, calories, protein, carbs, fat, fiber, sodium, sugar, is_processed, is_snack, image_path, time } = logData;
+        const [result] = await pool.execute(
+            `INSERT INTO food_logs (user_id, food_name, calories, protein, carbs, fat, fiber, sodium, sugar, is_processed, is_snack, image_path, logged_at) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [user_id, food_name, calories, protein, carbs, fat, fiber || 0, sodium || 0, sugar || 0, is_processed || false, is_snack || false, image_path, time]
         );
         return result.insertId;
     }
 
     static async findByUserId(userId, days = 7) {
-        const [rows] = await db.execute(
+        const [rows] = await pool.execute(
             `SELECT * FROM food_logs 
              WHERE user_id = ? AND logged_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
              ORDER BY logged_at DESC`,
@@ -22,7 +22,7 @@ class FoodLog {
     }
 
     static async getDailyStats(userId, date) {
-        const [rows] = await db.execute(
+        const [rows] = await pool.execute(
             `SELECT 
                 SUM(calories) as total_calories,
                 SUM(protein) as total_protein,

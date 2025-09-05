@@ -5,7 +5,7 @@ CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     age INT NOT NULL,
     gender ENUM('male', 'female') NOT NULL,
-    activity_level ENUM('low', 'moderate', 'high') NOT NULL,
+    activity ENUM('low', 'moderate', 'high') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -22,8 +22,9 @@ CREATE TABLE food_logs (
     fiber DECIMAL(8,2) DEFAULT 0,
     sodium DECIMAL(8,2) DEFAULT 0,
     sugar DECIMAL(8,2) DEFAULT 0,
+    is_processed BOOLEAN DEFAULT FALSE,
+    is_snack BOOLEAN DEFAULT FALSE,
     image_path VARCHAR(500),
-    meal_time ENUM('breakfast', 'lunch', 'dinner', 'snack') DEFAULT 'snack',
     logged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

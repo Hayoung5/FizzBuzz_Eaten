@@ -27,7 +27,7 @@ const createUser = async (req, res) => {
   }
   
   try {
-    const userId = await User.create({ age, gender, activity_level: activity });
+    const userId = await User.create({ age, gender, activity });
     res.json({ user_id: userId });
   } catch (error) {
     res.status(500).json({ error: 'Database error' });

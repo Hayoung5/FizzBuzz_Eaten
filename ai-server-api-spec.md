@@ -32,20 +32,42 @@ curl -X POST "https://ai-server.example.com/api/v1/analyze-food" \
 {
   "status": "success",
   "data": {
-    "food_name": "배추김치",
-    "portion_size": "1회 제공량 (100g)",
-    "nutrition": {
-      "calories": 35,
-      "carbohydrates": 7.0,
-      "protein": 1.5,
-      "fat": 0.5,
-      "sugar": 1.0,
-      "sodium": 800,
-      "fiber": 2.5
-    }
+    "food_name": ["배추김치", "현미밥"],
+    "portion_size": ["1회 제공량 (100g)", "1공기 (210g)"],
+    "is_processed": [false, false],
+    "is_snack": [false, false],
+    "nutrition": [
+      {
+        "calories": 35,
+        "carbohydrates": 7.0,
+        "protein": 1.5,
+        "fat": 0.5,
+        "sugar": 1.0,
+        "sodium": 800,
+        "fiber": 2.5
+      },
+      {
+        "calories": 218,
+        "carbohydrates": 44.8,
+        "protein": 4.5,
+        "fat": 1.8,
+        "sugar": 0.8,
+        "sodium": 2,
+        "fiber": 3.5
+      }
+    ]
   }
 }
 ```
+
+**Data Object**:
+- `food_name` (array): 인식된 음식명 배열
+- `portion_size` (array): 각 음식의 예상 제공량 정보 배열
+- `is_processed` (array): 각 음식의 가공식품 여부 배열 (true: 가공식품, false: 자연식품)
+- `is_snack` (array): 각 음식의 간식 여부 배열 (true: 간식, false: 주식)
+- `nutrition` (array): 각 음식의 영양정보 객체 배열
+
+**Note**: 모든 배열의 길이는 동일해야 하며, 각 인덱스는 같은 음식을 나타냅니다.
 
 **Nutrition Object**:
 - `calories` (number): 칼로리 (kcal)
