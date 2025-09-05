@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { photoService } from '../services/api'
 import NutritionResult from './NutritionResult'
 
 const Analysis = () => {
@@ -67,28 +68,39 @@ const Analysis = () => {
     }
   }
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setIsAnalyzing(true)
     
-    // 목업: 3초 후 분석 완료 (실제로는 vLLM API 호출)
-    setTimeout(() => {
-      console.log('영양 분석 완료:', selectedFile)
-      setIsAnalyzing(false)
+    try {
+      const userId = localStorage.getItem('userId') || 1234
+      const formData = new FormData()
+      formData.append('user_id', userId)
+      formData.append('time', new Date().toISOString())
+      formData.append('photo', selectedFile)
       
-      // 목업 결과 데이터
-      const mockResult = {
-        name: "배추김치",
-        serving: "100g",
-        calories: 35,
-        carbs: 7.0,
-        protein: 1.5,
-        fat: 0.5,
-        sugar: 1.0,
-        sodium: 800,
-        fiber: 2.5
+      const response = await photoService.analyzePhoto(formData)
+      
+      // API 응답을 컴포넌트 형식에 맞게 변환
+      const result = {
+        name: response.food_name,
+        serving: response.portion_size,
+        calories: response.nutrition.calories,
+        carbs: response.nutrition.carbohydrates,
+        protein: response.nutrition.protein,
+        fat: response.nutrition.fat,
+        sugar: response.nutrition.sugar,
+        sodium: response.nutrition.sodium,
+        fiber: response.nutrition.fiber
       }
-      setAnalysisResult(mockResult)
-    }, 3000)
+      
+      setAnalysisResult(result)
+    } catch (error) {
+      console.error('분석 실패:', error)
+      setModalMessage('음식 분석에 실패했습니다. 다시 시도해주세요.')
+      setShowModal(true)
+    } finally {
+      setIsAnalyzing(false)
+    }
   }
 
   // 분석 결과 화면
