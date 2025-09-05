@@ -18,39 +18,118 @@ const User = require('../models/User');
 /**
  * 사용자 통계 데이터 조회
  * @param {number} userId - 사용자 ID
- * @returns {Object} 7일간 영양소 섭취 통계
- * 
- * TODO: 실제 구현 로직
- * 1. FoodLog에서 최근 7일 데이터 조회
- * 2. 일별 영양소 합계 계산
- * 3. 식사/간식 분류 및 집계
- * 4. 가공식품/자연식 비율 계산
- * 5. 개인별 권장량 계산
+ * @returns {Promise<Object>} 7일간 영양소 섭취 통계
  */
-const getUserStatistics = (userId) => {
-  // TODO: 실제 데이터 기반 계산
-  // const foodLogs = FoodLog.getByUserId(userId);
-  // const last7Days = filterLast7Days(foodLogs);
-  // const dailyNutrition = calculateDailyNutrition(last7Days);
-  // const recommendations = calculateRecommendations(userInfo);
-  
-  return {
-    times: ["2025-09-01T08:00:00Z", "2025-09-01T12:30:00Z", "2025-09-02T08:15:00Z"],
-    meal_snack: [14320, 600],        // [식사 칼로리, 간식 칼로리]
-    processed: [12, 8],              // [가공식품 횟수, 자연식 횟수]
-    reco_cal: 2400,                  // 권장 칼로리
-    reco_carbo: 300,                 // 권장 탄수화물
-    reco_protein: 65,                // 권장 단백질
-    reco_fat: 50,                    // 권장 지방
-    reco_sugar: 25,                  // 권장 당
-    reco_sodium: 2000,               // 권장 나트륨
-    cal_log: [2200, 2300, 2500, 2100, 2000, 2400, 2600],
-    carbo_log: [280, 310, 295, 270, 260, 300, 310],
-    protein_log: [60, 70, 65, 55, 50, 68, 72],
-    fat_log: [45, 52, 50, 40, 42, 55, 60],
-    sugar_log: [20, 22, 18, 25, 30, 28, 27],
-    sodium_log: [1900, 2100, 2200, 1800, 2000, 2300, 2400]
-  };
+const getUserStatistics = async (userId) => {
+  try {
+    // 사용자 정보 및 권장량 조회
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // 최근 7일간 식사 기록 조회
+    const foodLogs = await FoodLog.findByUserId(userId, 7);
+    
+    if (foodLogs.length === 0) {
+      return {
+        times: [],
+        meal_snack: [0, 0],
+        processed: [0, 0],
+        reco_cal: user.reco_calories || 2400,
+        reco_carbo: user.reco_carbs || 300,
+        reco_protein: user.reco_protein || 65,
+        reco_fat: user.reco_fat || 50,
+        reco_sugar: user.reco_sugar || 25,
+        reco_sodium: user.reco_sodium || 2000,
+        cal_log: [0, 0, 0, 0, 0, 0, 0],
+        carbo_log: [0, 0, 0, 0, 0, 0, 0],
+        protein_log: [0, 0, 0, 0, 0, 0, 0],
+        fat_log: [0, 0, 0, 0, 0, 0, 0],
+        sugar_log: [0, 0, 0, 0, 0, 0, 0],
+        sodium_log: [0, 0, 0, 0, 0, 0, 0]
+      };
+    }
+
+    // 식사 시간 추출
+    const times = foodLogs.map(log => log.logged_at.toISOString());
+
+    // 식사/간식 칼로리 분류
+    let mealCalories = 0, snackCalories = 0;
+    let processedCount = 0, naturalCount = 0;
+
+    foodLogs.forEach(log => {
+      if (log.is_snack) {
+        snackCalories += parseFloat(log.calories);
+      } else {
+        mealCalories += parseFloat(log.calories);
+      }
+
+      if (log.is_processed) {
+        processedCount++;
+      } else {
+        naturalCount++;
+      }
+    });
+
+    // 일별 영양소 합계 계산 (최근 7일)
+    const dailyNutrition = {};
+    const today = new Date();
+    
+    // 7일간 초기화
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().split('T')[0];
+      dailyNutrition[dateKey] = {
+        calories: 0, carbs: 0, protein: 0, fat: 0, sugar: 0, sodium: 0
+      };
+    }
+
+    // 실제 데이터로 채우기
+    foodLogs.forEach(log => {
+      const dateKey = log.logged_at.toISOString().split('T')[0];
+      if (dailyNutrition[dateKey]) {
+        dailyNutrition[dateKey].calories += parseFloat(log.calories);
+        dailyNutrition[dateKey].carbs += parseFloat(log.carbs);
+        dailyNutrition[dateKey].protein += parseFloat(log.protein);
+        dailyNutrition[dateKey].fat += parseFloat(log.fat);
+        dailyNutrition[dateKey].sugar += parseFloat(log.sugar);
+        dailyNutrition[dateKey].sodium += parseFloat(log.sodium);
+      }
+    });
+
+    // 배열로 변환
+    const dates = Object.keys(dailyNutrition).sort();
+    const cal_log = dates.map(date => Math.round(dailyNutrition[date].calories));
+    const carbo_log = dates.map(date => Math.round(dailyNutrition[date].carbs));
+    const protein_log = dates.map(date => Math.round(dailyNutrition[date].protein));
+    const fat_log = dates.map(date => Math.round(dailyNutrition[date].fat));
+    const sugar_log = dates.map(date => Math.round(dailyNutrition[date].sugar));
+    const sodium_log = dates.map(date => Math.round(dailyNutrition[date].sodium));
+
+    return {
+      times,
+      meal_snack: [Math.round(mealCalories), Math.round(snackCalories)],
+      processed: [processedCount, naturalCount],
+      reco_cal: user.reco_calories || 2400,
+      reco_carbo: user.reco_carbs || 300,
+      reco_protein: user.reco_protein || 65,
+      reco_fat: user.reco_fat || 50,
+      reco_sugar: user.reco_sugar || 25,
+      reco_sodium: user.reco_sodium || 2000,
+      cal_log,
+      carbo_log,
+      protein_log,
+      fat_log,
+      sugar_log,
+      sodium_log
+    };
+
+  } catch (error) {
+    console.error('Statistics calculation error:', error);
+    throw error;
+  }
 };
 
 /**

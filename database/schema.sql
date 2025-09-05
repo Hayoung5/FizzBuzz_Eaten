@@ -6,6 +6,12 @@ CREATE TABLE users (
     age INT NOT NULL,
     gender ENUM('male', 'female') NOT NULL,
     activity ENUM('low', 'moderate', 'high') NOT NULL,
+    reco_calories INT,
+    reco_protein INT,
+    reco_fat INT,
+    reco_sugar INT,
+    reco_sodium INT,
+    reco_fiber INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

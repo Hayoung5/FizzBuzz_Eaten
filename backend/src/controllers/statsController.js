@@ -19,16 +19,22 @@ const statsService = require('../services/statsService');
  * GET /api/statistics?user_id=1234
  * @returns {Object} 7일간 영양소 통계 데이터
  */
-const getStatistics = (req, res) => {
+const getStatistics = async (req, res) => {
   const { user_id } = req.query;
   
-  if (!user_id || !User.findById(user_id)) {
-    return res.status(404).json({ error: 'User not found' });
+  if (!user_id) {
+    return res.status(400).json({ error: 'user_id is required' });
   }
   
   try {
-    // 사용자 통계 데이터 조회 (현재는 목업 데이터)
-    const stats = statsService.getUserStatistics(user_id);
+    // 사용자 존재 확인
+    const user = await User.findById(user_id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // 실제 DB 데이터 기반 통계 조회
+    const stats = await statsService.getUserStatistics(user_id);
     res.json(stats);
   } catch (error) {
     console.error('Statistics error:', error.message);
