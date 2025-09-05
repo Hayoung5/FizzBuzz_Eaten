@@ -33,15 +33,3 @@ jobs:
         remote_host: 44.214.236.166
         remote_user: ec2-user
         remote_key: ${{ secrets.EC2_SSH_KEY }}
-    
-    - name: Restart server
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: 44.214.236.166
-        username: ec2-user
-        key: ${{ secrets.EC2_SSH_KEY }}
-        timeout: 10s
-        script: |
-          pkill -f 'serve.*3000' || true
-          cd ~/nutrition-app && nohup serve -s dist -l 3000 &
-          echo "Server restarted"
