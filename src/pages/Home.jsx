@@ -7,28 +7,9 @@ const Home = () => {
   const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
-    const checkUser = async () => {
-      const userId = localStorage.getItem('userId')
-      
-      if (!userId) {
-        navigate('/login')
-        return
-      }
-
-      try {
-        // API로 사용자 존재 여부 확인
-        await statisticsService.getStatistics(userId)
-        navigate('/dashboard')
-      } catch (error) {
-        // 사용자가 없거나 API 오류 시 로그인으로
-        localStorage.removeItem('userId')
-        navigate('/login')
-      } finally {
-        setIsChecking(false)
-      }
-    }
-
-    checkUser()
+    // 백엔드 완성까지 무조건 로그인 페이지로 이동
+    navigate('/login')
+    setIsChecking(false)
   }, [navigate])
 
   if (isChecking) {
