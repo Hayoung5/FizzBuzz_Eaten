@@ -32,7 +32,8 @@ const Login = () => {
               justifyContent: 'center',
               gap: '8px',
               width: '100%',
-              maxWidth: '300px'
+              maxWidth: '300px',
+              margin: '0 auto'
             }}
           >
             <span style={{ fontSize: '18px' }}>💬</span>

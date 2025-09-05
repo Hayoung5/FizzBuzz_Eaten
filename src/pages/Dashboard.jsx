@@ -1,9 +1,20 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const Dashboard = () => {
+  const navigate = useNavigate()
+  
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-16">
-      <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md text-center">
+      <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-lg text-center relative">
+        {/* 내정보 아이콘 */}
+        <button
+          onClick={() => navigate('/profile')}
+          className="absolute top-6 right-6 p-2 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
+          title="내 정보 보기"
+        >
+          <span className="text-lg">👤</span>
+        </button>
+        
         <h2 className="text-center mb-6 text-gray-800 text-2xl font-medium">
           🤔 무엇을 도와드릴까요?
         </h2>

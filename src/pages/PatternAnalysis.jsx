@@ -15,9 +15,21 @@ const PatternAnalysis = () => {
         console.error('통계 데이터 로드 실패:', error)
         // 실패 시 목업 데이터 사용
         setData({
-          meal_snack: [3200, 800],
-          processed: [5, 15],
-          times: ['2025-09-05T08:30:00', '2025-09-05T12:45:00', '2025-09-05T19:20:00']
+          meal_snack: [3200, 800], // [끝니 칼로리, 간식 칼로리]
+          processed: [12, 8], // [가공식품 횟수, 자연식품 횟수]
+          times: ['08:30', '12:45', '19:20', '22:30', '07:45', '13:10', '18:50'],
+          reco_cal: 2200,
+          reco_carbo: 300,
+          reco_protein: 80,
+          reco_fat: 70,
+          reco_sugar: 50,
+          reco_sodium: 2000,
+          cal_log: [2100, 2350, 1900, 2500, 2250, 1800, 2400],
+          carbo_log: [250, 280, 220, 320, 270, 200, 310],
+          protein_log: [85, 92, 75, 98, 88, 70, 95],
+          fat_log: [65, 78, 58, 88, 72, 55, 82],
+          sugar_log: [45, 52, 38, 58, 48, 35, 55],
+          sodium_log: [1800, 2100, 1600, 2300, 1900, 1500, 2200]
         })
       } finally {
         setLoading(false)
@@ -221,7 +233,7 @@ const PatternAnalysis = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-16">
-        <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md text-center">
+        <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-lg text-center">
           <p>로딩 중...</p>
         </div>
       </div>
@@ -231,7 +243,7 @@ const PatternAnalysis = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       {/* 첫 번째 섹션: 파이차트 */}
-      <div className="max-w-md mx-auto mb-8 bg-white rounded-3xl shadow-lg p-8">
+      <div className="max-w-lg mx-auto mb-8 bg-white rounded-3xl shadow-lg p-8">
         <h2 className="text-center mb-7 text-gray-800 text-xl font-semibold">
           🍽️ 식사 패턴 분석
         </h2>
@@ -240,7 +252,7 @@ const PatternAnalysis = () => {
       </div>
 
       {/* 두 번째 섹션: 식사 타임라인 */}
-      <div className="max-w-md mx-auto mb-8 bg-white rounded-3xl shadow-lg p-8">
+      <div className="max-w-lg mx-auto mb-8 bg-white rounded-3xl shadow-lg p-8">
         <h2 className="text-center mb-3 text-gray-800 text-xl font-semibold">
           📅 최근 식사 기록
         </h2>
@@ -251,7 +263,7 @@ const PatternAnalysis = () => {
       </div>
 
       {/* 세 번째 섹션: 상세 영양 분석 */}
-      <div className="max-w-md mx-auto bg-white rounded-3xl shadow-lg p-8">
+      <div className="max-w-lg mx-auto bg-white rounded-3xl shadow-lg p-8">
         <h2 className="text-center mb-7 text-gray-800 text-xl font-semibold">
           📊 상세 영양 분석
         </h2>

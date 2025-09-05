@@ -9,6 +9,7 @@ import UserSetup from './pages/UserSetup'
 import Login from './pages/Login'
 import PatternAnalysis from './pages/PatternAnalysis'
 import MealRecommendation from './pages/MealRecommendation'
+import Profile from './pages/Profile'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/meal-recommendation" element={<MealRecommendation />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </Layout>
     </Router>

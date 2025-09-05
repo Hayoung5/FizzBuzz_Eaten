@@ -38,7 +38,7 @@ const Report = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-md mx-auto bg-white rounded-3xl shadow-lg p-7" 
+      <div className="max-w-lg mx-auto bg-white rounded-3xl shadow-lg p-7" 
            style={{
              background: 'linear-gradient(135deg, #fefefe, #f7faff)',
              boxShadow: '0 6px 14px rgba(0,0,0,0.08)'

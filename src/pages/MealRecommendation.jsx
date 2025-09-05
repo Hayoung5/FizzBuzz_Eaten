@@ -1,26 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mealRecoService } from '../services/api';
 
 const MealRecommendation = () => {
-  const [loading, setLoading] = useState(true);
-  const [recommendation, setRecommendation] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchRecommendation = async () => {
-      try {
-        // 로딩 시간을 위해 2초 대기
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        const data = await mealRecoService.getMealRecommendation(2);
-        setRecommendation(data);
-      } catch (error) {
-        console.error('추천 메뉴 로드 실패:', error);
-        // 에러 시 기본 추천 내용
-        setRecommendation({
-          name: '사용자',
-          recommendation: `🍽 최근 2~3일간 섭취량을 살펴보니, <strong>단백질</strong>이 조금 부족한 편이에요.
+  const recommendation = {
+    name: '김세끼',
+    recommendation: `🍽 최근 2~3일간 섭취량을 살펴보니, <strong>단백질</strong>이 조금 부족한 편이에요.
 
 🥚 다음 끼니에는 <strong>계란, 두부, 닭가슴살</strong>과 같은 단백질 풍부한 메뉴를 추가하면 좋겠습니다.
 
@@ -28,18 +14,14 @@ const MealRecommendation = () => {
 
 🥗 <strong>샐러드나 채소 중심의 반찬</strong>을 함께 곁들이면 균형 잡힌 식사가 됩니다.
 
-🍛 간단히 예를 들면, '<strong>두부 계란덮밥 + 채소 샐러드</strong>', '<strong>닭가슴살 구이 + 야채 볶음</strong>', '<strong>계란 야채 스크램블</strong>' 같은 메뉴를 시도해보세요.`
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+🍛 간단히 예를 들면, '<strong>두부 계란덮밥 + 채소 샐러드</strong>', '<strong>닭가슴살 구이 + 야채 볶음</strong>', '<strong>계란 야채 스크램블</strong>' 같은 메뉴를 시도해보세요.
 
-    fetchRecommendation();
-  }, []);
+🍎 추가로 비타민 C가 풍부한 <strong>키위, 오렌지, 브로콜리</strong> 같은 과일이나 채소를 간식으로 드시면 면역력 향상에도 도움이 될 거예요!
 
-  if (loading) {
-    return (
+🍵 물도 하루 8잔 이상 마시는 것을 잊지 마세요. 신진대사와 노폐물 배출에 중요한 역할을 합니다.`
+  };
+
+  return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-md mx-auto bg-white rounded-3xl shadow-lg p-7 min-h-[300px] flex flex-col justify-center items-center text-center"
              style={{
@@ -57,11 +39,10 @@ const MealRecommendation = () => {
         </div>
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-md mx-auto bg-white rounded-3xl shadow-lg p-7"
+      <div className="max-w-lg mx-auto bg-white rounded-3xl shadow-lg p-7"
            style={{
              background: 'linear-gradient(135deg, #fefefe, #f7faff)',
              boxShadow: '0 6px 14px rgba(0,0,0,0.08)'
@@ -73,13 +54,13 @@ const MealRecommendation = () => {
             💡 오늘의 맞춤 식사 제안
           </h2>
           <p className="text-sm text-gray-500">
-            {recommendation?.name || '사용자'}님의 최근 식단을 분석했어요!
+            {recommendation.name}님의 최근 식단을 분석했어요!
           </p>
         </div>
 
         {/* 추천 내용 */}
         <div className="bg-gray-50 p-5 rounded-xl mb-8">
-          {recommendation?.recommendation?.split('\n').map((paragraph, index) => (
+          {recommendation.recommendation.split('\n').map((paragraph, index) => (
             paragraph.trim() && (
               <p key={index} 
                  className="text-sm text-gray-600 leading-relaxed mb-3 last:mb-0"

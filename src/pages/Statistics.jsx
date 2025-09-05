@@ -14,7 +14,7 @@ const Statistics = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-8">
-      <div className="w-full max-w-md mx-7 p-7 rounded-3xl shadow-lg bg-gradient-to-br from-white to-blue-50">
+      <div className="w-full max-w-lg mx-7 p-7 rounded-3xl shadow-lg bg-gradient-to-br from-white to-blue-50">
         <h2 className="text-center mb-3 text-gray-800 text-xl font-semibold">
           📊 통계 및 리포트
         </h2>
