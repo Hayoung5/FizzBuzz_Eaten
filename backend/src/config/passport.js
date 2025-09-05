@@ -17,17 +17,22 @@ passport.use(new KakaoStrategy({
       return done(null, user);
     }
     
-    // 신규 사용자 - 추가 정보 입력 필요
-    // 임시 사용자 정보만 전달
-    const tempUser = {
-      isNewUser: true,
+    // 신규 사용자 - 기본 정보로 자동 생성
+    const userData = {
       oauth_provider: 'kakao',
       oauth_id: profile.id,
       email: profile._json.kakao_account?.email || null,
-      name: profile.displayName || profile._json.properties?.nickname
+      name: profile.displayName || profile._json.properties?.nickname || '카카오 사용자',
+      age: 25, // 기본값
+      gender: 'unknown', // 기본값
+      activity: 'moderate' // 기본값
     };
     
-    return done(null, tempUser);
+    // 사용자 생성
+    const userId = await User.createOAuthUser(userData);
+    const newUser = await User.findById(userId);
+    
+    return done(null, newUser);
     
   } catch (error) {
     return done(error, null);
@@ -35,25 +40,13 @@ passport.use(new KakaoStrategy({
 }));
 
 passport.serializeUser((user, done) => {
-  if (user.isNewUser) {
-    // 신규 사용자는 임시 데이터를 세션에 저장
-    done(null, { isNewUser: true, tempData: user });
-  } else {
-    // 기존 사용자는 ID만 저장
-    done(null, user.id);
-  }
+  done(null, user.id);
 });
 
-passport.deserializeUser(async (data, done) => {
+passport.deserializeUser(async (id, done) => {
   try {
-    if (data.isNewUser) {
-      // 신규 사용자는 임시 데이터 반환
-      done(null, data.tempData);
-    } else {
-      // 기존 사용자는 DB에서 조회
-      const user = await User.findById(data);
-      done(null, user);
-    }
+    const user = await User.findById(id);
+    done(null, user);
   } catch (error) {
     done(error, null);
   }

@@ -11,19 +11,7 @@ const kakaoCallback = (req, res) => {
       return res.redirect('http://localhost:3001/login?error=auth_failed');
     }
     
-    if (user.isNewUser) {
-      // 신규 사용자 - 추가 정보 입력 페이지로 리다이렉트
-      const tempData = encodeURIComponent(JSON.stringify({
-        oauth_provider: user.oauth_provider,
-        oauth_id: user.oauth_id,
-        email: user.email,
-        name: user.name
-      }));
-      
-      return res.redirect(`http://localhost:3001/setup?temp_data=${tempData}`);
-    }
-    
-    // 기존 사용자 - JWT 토큰 생성하여 메인으로
+    // 모든 사용자 - JWT 토큰 생성하여 대시보드로
     const token = generateToken(user.id);
     res.redirect(`http://localhost:3001/dashboard?token=${token}&user_id=${user.id}`);
     
