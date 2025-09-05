@@ -24,42 +24,37 @@ jobs:
     - name: Build
       run: npm run build
     
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: 44.214.236.166
-        username: ec2-user
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          cd ~/nutrition-app
-          rm -rf dist_backup
-          mv dist dist_backup 2>/dev/null || true
-          mkdir -p dist
+    - name: Create deployment package
+      run: |
+        cd dist
+        tar -czf ../deploy.tar.gz .
+        cd ..
     
-    - name: Copy files to EC2
+    - name: Deploy to EC2
       uses: appleboy/scp-action@v0.1.4
       with:
         host: 44.214.236.166
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "dist/*"
-        target: "~/nutrition-app/"
-        strip_components: 1
+        source: "deploy.tar.gz"
+        target: "~/"
     
-    - name: Restart server
+    - name: Extract and restart
       uses: appleboy/ssh-action@v0.1.7
       with:
         host: 44.214.236.166
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
-        command_timeout: 30s
+        timeout: 60s
+        script_stop: true
         script: |
           pkill -f 'serve.*3000' || true
-          sleep 1
           cd ~/nutrition-app
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-          nohup serve -s dist -l 3000 > server.log 2>&1 &
-          sleep 3
-          ps aux | grep serve | grep 3000 || echo "Server start failed"
-          echo "Deployment completed!"
+          rm -rf dist_old && mv dist dist_old 2>/dev/null || true
+          mkdir -p dist && cd dist
+          tar -xzf ~/deploy.tar.gz
+          cd ~/nutrition-app
+          export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          serve -s dist -l 3000 > /dev/null 2>&1 &
+          rm ~/deploy.tar.gz
+          echo "Deployment completed successfully!"
