@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 
 const Dashboard = () => {
   return (
-    <div className="p-8 min-h-screen flex items-center">
-      <div className="max-w-lg mx-auto w-full py-16 px-12 rounded-3xl shadow-lg bg-gradient-to-br from-white to-blue-50">
+    <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-16">
+      <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md text-center">
         <h2 className="text-center mb-6 text-gray-800 text-2xl font-medium">
           🤔 무엇을 도와드릴까요?
         </h2>

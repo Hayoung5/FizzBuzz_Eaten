@@ -6,6 +6,7 @@ import Analysis from './pages/Analysis'
 import Statistics from './pages/Statistics'
 import Report from './pages/Report'
 import UserSetup from './pages/UserSetup'
+import Login from './pages/Login'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/setup" element={<UserSetup />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/report" element={<Report />} />
