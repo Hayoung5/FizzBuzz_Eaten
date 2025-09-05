@@ -3,11 +3,12 @@
  * - Express 서버 설정 및 시작
  * - 미들웨어 등록
  * - 라우트 연결
- * - 서버 포트 설정
+ * - 데이터베이스 연결 확인
  */
 
 const express = require('express');
 const cors = require('cors');
+const { testConnection } = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
 const photoRoutes = require('./routes/photoRoutes');
 const statsRoutes = require('./routes/statsRoutes');
@@ -24,9 +25,32 @@ app.use('/api', userRoutes);    // 사용자 관련 API
 app.use('/api', photoRoutes);   // 사진 분석 API
 app.use('/api', statsRoutes);   // 통계/리포트 API
 
-// 서버 시작
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// 헬스체크 엔드포인트
+app.get('/health', async (req, res) => {
+  const dbStatus = await testConnection();
+  res.json({
+    status: 'ok',
+    database: dbStatus ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString()
+  });
 });
+
+// 서버 시작
+const startServer = async () => {
+  try {
+    // 데이터베이스 연결 확인
+    await testConnection();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/health`);
+    });
+  } catch (error) {
+    console.error('❌ Server startup failed:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 module.exports = app;
