@@ -51,8 +51,14 @@ jobs:
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          sudo cp nginx.conf /etc/nginx/sites-available/nutrition-app-frontend
-          sudo ln -sf /etc/nginx/sites-available/nutrition-app-frontend /etc/nginx/sites-enabled/
-          sudo rm -f /etc/nginx/sites-enabled/default
-          sudo nginx -t && sudo systemctl restart nginx
-          sudo ufw allow 3001
+          # Install nginx if not installed
+          sudo yum install -y nginx
+          
+          # Copy nginx config
+          sudo cp nginx.conf /etc/nginx/conf.d/nutrition-app-frontend.conf
+          
+          # Test and restart nginx
+          sudo nginx -t && sudo systemctl enable nginx && sudo systemctl restart nginx
+          
+          # Open port 3001
+          sudo firewall-cmd --permanent --add-port=3001/tcp || echo "firewall-cmd not available"
