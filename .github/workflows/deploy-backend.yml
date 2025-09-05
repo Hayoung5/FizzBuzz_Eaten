@@ -15,12 +15,21 @@ jobs:
     - name: Deploy backend with rsync
       uses: burnett01/rsync-deployments@6.0.0
       with:
-        switches: -avzr --delete --exclude='.git' --exclude='node_modules' --exclude='*.log'
+        switches: -avzr --delete --exclude='.git' --exclude='node_modules' --exclude='*.log' --exclude='.env'
         path: ./
         remote_path: /home/ec2-user/nutrition-backend/
         remote_host: 44.214.236.166
         remote_user: ec2-user
         remote_key: ${{ secrets.EC2_SSH_KEY }}
+    
+    - name: Copy .env file
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "backend/.env"
+        target: "/home/ec2-user/nutrition-backend/"
     
     - name: Start backend
       uses: appleboy/ssh-action@v0.1.7
@@ -35,6 +44,9 @@ jobs:
           pkill node || echo "No node process to kill"
           cd /home/ec2-user/nutrition-backend/backend
           
+          echo "Checking .env file..."
+          ls -la .env || echo ".env file not found"
+          
           echo "Installing dependencies..."
           npm install --silent
           
@@ -44,4 +56,5 @@ jobs:
           
           sleep 3
           ps aux | grep "node src/app.js" | grep -v grep || echo "Server may not have started"
+          curl -I http://localhost:3000 || echo "Server not responding"
           echo "Backend deployment completed"
