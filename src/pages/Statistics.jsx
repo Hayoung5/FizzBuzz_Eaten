@@ -1,59 +1,46 @@
-import { useState, useEffect } from 'react'
-import { statisticsService } from '../services/api'
-import NutritionChart from '../components/NutritionChart'
-import CalorieChart from '../components/CalorieChart'
-
 const Statistics = () => {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const handlePatternAnalysis = () => {
+    console.log('식사 패턴 분석 클릭')
+    // TODO: 식사 패턴 분석 페이지로 이동
+  }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const userId = localStorage.getItem('userId')
-        if (userId) {
-          const response = await statisticsService.getStatistics(userId)
-          setData(response)
-        }
-      } catch (error) {
-        console.error('통계 데이터 로드 실패:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [])
-
-  if (loading) return <div className="p-4">로딩 중...</div>
-  if (!data) return <div className="p-4">데이터가 없습니다.</div>
+  const handleAnalysisReport = () => {
+    console.log('식사 분석 리포트 클릭')
+    // TODO: 식사 분석 리포트 페이지로 이동
+  }
 
   return (
-    <div className="p-4 space-y-6">
-      <h2 className="text-xl font-bold">주간 영양 통계</h2>
-      
-      <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="font-medium mb-4">칼로리 섭취량</h3>
-        <CalorieChart data={data} />
-      </div>
+    <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-8">
+      <div className="w-full max-w-md mx-7 p-7 rounded-3xl shadow-lg bg-gradient-to-br from-white to-blue-50">
+        <h2 className="text-center mb-3 text-gray-800 text-xl font-semibold">
+          📊 통계 및 리포트
+        </h2>
+        <p className="text-sm text-gray-600 mb-7 text-center leading-relaxed">
+          나의 식사 습관을 돌아보고,<br/> 건강한 변화를 위한 리포트를 확인해보세요.
+        </p>
 
-      <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="font-medium mb-4">영양소 섭취량</h3>
-        <NutritionChart data={data} />
-      </div>
+        <div className="flex flex-col gap-4">
+          <button 
+            onClick={handlePatternAnalysis}
+            className="flex items-center w-full p-4 border border-gray-200 rounded-2xl bg-white cursor-pointer text-left transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1"
+          >
+            <div className="text-3xl mr-4">📈</div>
+            <div>
+              <div className="font-bold text-gray-800 text-sm">식사 패턴 분석</div>
+              <div className="text-xs text-gray-600 mt-1">언제, 무엇을 먹는지 한눈에 파악하고 패턴을 발견해요.</div>
+            </div>
+          </button>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <div className="text-2xl font-bold text-primary-600">
-            {data.meal_snack[0]}
-          </div>
-          <div className="text-sm text-gray-600">식사 칼로리</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <div className="text-2xl font-bold text-orange-500">
-            {data.meal_snack[1]}
-          </div>
-          <div className="text-sm text-gray-600">간식 칼로리</div>
+          <button 
+            onClick={handleAnalysisReport}
+            className="flex items-center w-full p-4 border border-gray-200 rounded-2xl bg-white cursor-pointer text-left transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1"
+          >
+            <div className="text-3xl mr-4">💡</div>
+            <div>
+              <div className="font-bold text-gray-800 text-sm">식사 분석 리포트</div>
+              <div className="text-xs text-gray-600 mt-1">영양 상태를 진단하고, 맞춤형 건강 조언을 얻어가세요.</div>
+            </div>
+          </button>
         </div>
       </div>
     </div>
