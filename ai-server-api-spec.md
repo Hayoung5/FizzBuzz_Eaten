@@ -31,21 +31,47 @@ curl -X POST "https://ai-server.example.com/api/v1/analyze-food" \
 ```json
 {
   "status": "success",
-  "data": {
-    "food_name": "배추김치",
-    "portion_size": "1회 제공량 (100g)",
-    "nutrition": {
-      "calories": 35,
-      "carbohydrates": 7.0,
-      "protein": 1.5,
-      "fat": 0.5,
-      "sugar": 1.0,
-      "sodium": 800,
-      "fiber": 2.5
+  "data": [
+    {
+      "food_name": "배추김치",
+      "portion_size": "1회 제공량 (100g)",
+      "is_processed": false,
+      "is_snack": false,
+      "nutrition": {
+        "calories": 35,
+        "carbohydrates": 7.0,
+        "protein": 1.5,
+        "fat": 0.5,
+        "sugar": 1.0,
+        "sodium": 800,
+        "fiber": 2.5
+      }
+    },
+    {
+      "food_name": "현미밥",
+      "portion_size": "1공기 (210g)",
+      "is_processed": false,
+      "is_snack": false,
+      "nutrition": {
+        "calories": 218,
+        "carbohydrates": 44.8,
+        "protein": 4.5,
+        "fat": 1.8,
+        "sugar": 0.8,
+        "sodium": 2,
+        "fiber": 3.5
+      }
     }
-  }
+  ]
 }
 ```
+
+**Data Array**: 인식된 음식들의 배열
+- `food_name` (string): 음식명
+- `portion_size` (string): 예상 제공량 정보
+- `is_processed` (boolean): 가공식품 여부 (true: 가공식품, false: 자연식품)
+- `is_snack` (boolean): 간식 여부 (true: 간식, false: 주식)
+- `nutrition` (object): 영양정보 객체
 
 **Nutrition Object**:
 - `calories` (number): 칼로리 (kcal)

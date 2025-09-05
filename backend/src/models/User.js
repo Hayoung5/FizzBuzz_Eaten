@@ -1,144 +1,86 @@
-/**
- * 사용자 데이터 모델 (MySQL 연동)
- * - MySQL 데이터베이스를 통한 사용자 정보 관리
- * - CRUD 작업 및 데이터 검증
- * 
- * TODO: 실제 구현시 추가할 기능들
- * - 사용자 인증/권한 관리
- * - 데이터 유효성 검증 강화
- * - 사용자 프로필 확장
- * - 개인정보 암호화
- */
-
-const { executeQuery } = require('../config/database');
+const { pool } = require('../config/database');
+const nutritionData = require('../data/nutrition-recommendations.json');
 
 class User {
-  /**
-   * 새 사용자 생성
-   * @param {Object} userData - {age, gender, activity}
-   * @returns {Promise<number>} 생성된 사용자 ID
-   */
-  async create(userData) {
-    const { age, gender, activity } = userData;
-    
-    // TODO: 데이터 유효성 검증
-    // - age: 1-120 범위 체크
-    // - gender: enum 값 체크
-    // - activity: enum 값 체크
-    
-    const query = `
-      INSERT INTO users (age, gender, activity) 
-      VALUES (?, ?, ?)
-    `;
-    
-    const result = await executeQuery(query, [age, gender, activity]);
-    return result.insertId;
-  }
+    static async create(userData) {
+        const { age, gender, activity } = userData;
+        
+        // 권장량 계산
+        const recommendations = this.calculateRecommendations(age, gender, activity);
+        
+        const [result] = await pool.execute(
+            `INSERT INTO users (age, gender, activity, reco_calories, reco_carbs, reco_protein, reco_fat, reco_sugar, reco_sodium, reco_fiber) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [age, gender, activity, recommendations.calories, recommendations.carbohydrates, recommendations.protein, recommendations.fat, 
+             recommendations.sugar, recommendations.sodium, recommendations.fiber]
+        );
+        return result.insertId;
+    }
 
-  /**
-   * 사용자 ID로 사용자 정보 조회
-   * @param {number} userId - 사용자 ID
-   * @returns {Promise<Object|null>} 사용자 정보
-   */
-  async findById(userId) {
-    const query = `
-      SELECT id, age, gender, activity, created_at, updated_at 
-      FROM users 
-      WHERE id = ?
-    `;
-    
-    const result = await executeQuery(query, [userId]);
-    return result.length > 0 ? result[0] : null;
-  }
+    static async findById(id) {
+        const [rows] = await pool.execute('SELECT * FROM users WHERE id = ?', [id]);
+        return rows[0];
+    }
 
-  /**
-   * 사용자 정보 수정
-   * @param {number} userId - 사용자 ID
-   * @param {Object} updateData - 수정할 데이터
-   * @returns {Promise<boolean>} 수정 성공 여부
-   */
-  async update(userId, updateData) {
-    const { age, gender, activity } = updateData;
-    
-    const query = `
-      UPDATE users 
-      SET age = ?, gender = ?, activity = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `;
-    
-    const result = await executeQuery(query, [age, gender, activity, userId]);
-    return result.affectedRows > 0;
-  }
+    static async update(id, userData) {
+        const { age, gender, activity } = userData;
+        
+        // 권장량 재계산
+        const recommendations = this.calculateRecommendations(age, gender, activity);
+        
+        await pool.execute(
+            `UPDATE users SET age = ?, gender = ?, activity = ?, reco_calories = ?, reco_carbs = ?, reco_protein = ?, reco_fat = ?, reco_sugar = ?, reco_sodium = ?, reco_fiber = ? 
+             WHERE id = ?`,
+            [age, gender, activity, recommendations.calories, recommendations.carbohydrates, recommendations.protein, recommendations.fat,
+             recommendations.sugar, recommendations.sodium, recommendations.fiber, id]
+        );
+    }
 
-  /**
-   * 사용자 삭제
-   * @param {number} userId - 사용자 ID
-   * @returns {Promise<boolean>} 삭제 성공 여부
-   */
-  async delete(userId) {
-    const query = `DELETE FROM users WHERE id = ?`;
-    
-    const result = await executeQuery(query, [userId]);
-    return result.affectedRows > 0;
-  }
+    static calculateRecommendations(age, gender, activity) {
+        // 나이 그룹 결정
+        let ageGroup;
+        if (age >= 6 && age <= 8) ageGroup = '6-8';
+        else if (age >= 9 && age <= 11) ageGroup = '9-11';
+        else if (age >= 12 && age <= 14) ageGroup = '12-14';
+        else if (age >= 19 && age <= 29) ageGroup = '19-29';
+        else if (age >= 30 && age <= 49) ageGroup = '30-49';
+        else if (age >= 50 && age <= 64) ageGroup = '50-64';
+        else if (age >= 65) ageGroup = '65+';
+        else ageGroup = '19-29'; // 기본값
 
-  /**
-   * 사용자별 영양 권장량 조회
-   * @param {number} userId - 사용자 ID
-   * @returns {Promise<Object|null>} 영양 권장량 정보
-   */
-  async getNutritionRecommendations(userId) {
-    const query = `
-      SELECT * FROM nutrition_recommendations 
-      WHERE user_id = ?
-    `;
-    
-    const result = await executeQuery(query, [userId]);
-    return result.length > 0 ? result[0] : null;
-  }
+        // 활동량 매핑
+        const activityMap = {
+            'low': 'low',
+            'moderate': 'medium', 
+            'high': 'high'
+        };
 
-  /**
-   * 사용자별 영양 권장량 설정
-   * @param {number} userId - 사용자 ID
-   * @param {Object} recommendations - 권장량 데이터
-   * @returns {Promise<boolean>} 설정 성공 여부
-   */
-  async setNutritionRecommendations(userId, recommendations) {
-    const {
-      recommended_calories,
-      recommended_carbohydrates,
-      recommended_protein,
-      recommended_fat,
-      recommended_sugar,
-      recommended_sodium,
-      recommended_fiber
-    } = recommendations;
+        const activityLevel = activityMap[activity] || 'medium';
+        const data = nutritionData[gender]?.[ageGroup];
 
-    const query = `
-      INSERT INTO nutrition_recommendations (
-        user_id, recommended_calories, recommended_carbohydrates, 
-        recommended_protein, recommended_fat, recommended_sugar, 
-        recommended_sodium, recommended_fiber
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-        recommended_calories = VALUES(recommended_calories),
-        recommended_carbohydrates = VALUES(recommended_carbohydrates),
-        recommended_protein = VALUES(recommended_protein),
-        recommended_fat = VALUES(recommended_fat),
-        recommended_sugar = VALUES(recommended_sugar),
-        recommended_sodium = VALUES(recommended_sodium),
-        recommended_fiber = VALUES(recommended_fiber),
-        updated_at = CURRENT_TIMESTAMP
-    `;
+        if (!data) {
+            // 기본값 반환
+            return {
+                calories: 2000,
+                carbohydrates: 300,
+                protein: 50,
+                fat: 60,
+                sugar: 30,
+                sodium: 1800,
+                fiber: 20
+            };
+        }
 
-    const result = await executeQuery(query, [
-      userId, recommended_calories, recommended_carbohydrates,
-      recommended_protein, recommended_fat, recommended_sugar,
-      recommended_sodium, recommended_fiber
-    ]);
-
-    return result.affectedRows > 0;
-  }
+        return {
+            calories: data.calories[activityLevel],
+            carbohydrates: data.carbohydrates,
+            protein: data.protein,
+            fat: data.fat,
+            sugar: data.sugars,
+            sodium: data.sodium,
+            fiber: data.fiber
+        };
+    }
 }
 
-module.exports = new User();
+module.exports = User;
