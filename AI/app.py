@@ -20,6 +20,69 @@ ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def get_dummy_nutrition(food_name):
+    """음식명에 따른 더미 영양 정보 반환"""
+    nutrition_db = {
+        '피자': {
+            "calories": 35,
+            "carbohydrates": 7.0,
+            "protein": 1.5,
+            "fat": 0.5,
+            "sugar": 1.0,
+            "sodium": 800,
+            "fiber": 2.5
+        },
+        '햄버거': {
+            "calories": 218,
+            "carbohydrates": 44.8,
+            "protein": 4.5,
+            "fat": 1.8,
+            "sugar": 0.8,
+            "sodium": 2,
+            "fiber": 3.5
+        },
+        '김밥': {
+            "calories": 250,
+            "carbohydrates": 35.0,
+            "protein": 8.0,
+            "fat": 8.5,
+            "sugar": 2.0,
+            "sodium": 450,
+            "fiber": 2.0
+        },
+        '라면': {
+            "calories": 380,
+            "carbohydrates": 55.0,
+            "protein": 9.0,
+            "fat": 14.0,
+            "sugar": 3.0,
+            "sodium": 1200,
+            "fiber": 1.5
+        },
+        '비빔밥': {
+            "calories": 320,
+            "carbohydrates": 48.0,
+            "protein": 12.0,
+            "fat": 9.0,
+            "sugar": 4.0,
+            "sodium": 650,
+            "fiber": 4.0
+        }
+    }
+    
+    # 기본값 (음식을 찾을 수 없는 경우)
+    default_nutrition = {
+        "calories": 200,
+        "carbohydrates": 30.0,
+        "protein": 8.0,
+        "fat": 6.0,
+        "sugar": 2.0,
+        "sodium": 400,
+        "fiber": 2.0
+    }
+    
+    return nutrition_db.get(food_name, default_nutrition)
+
 @app.route('/')
 def index():
     return jsonify({
@@ -103,17 +166,16 @@ def analyze_food():
         # AI 분석 실행
         result = bedrock_service.analyze_image(tmp_file_path, prompt)
         
-        # Nutrition API 추가 예정
-        '''
-        Nutrition API Add
-        '''
-
         # JSON 파싱 시도
         start_idx = result.find('[')
         end_idx = result.rfind(']') + 1
         if start_idx != -1 and end_idx != 0:
             json_str = result[start_idx:end_idx]
             parsed_result = json.loads(json_str)
+            
+            # 영양 정보 추가
+            for food_item in parsed_result:
+                food_item['nutrition'] = get_dummy_nutrition(food_item['food_name'])
             
             return jsonify({
                 "status": "success",
@@ -317,7 +379,7 @@ def recommend_meal():
 
         # AI 분석 프롬프트 개선
         prompt = f"""
-        다음은 사용자의 3일간 식사 데이터입니다. 이를 분석하여 다음 끼니에 대한 식사 추천을 해주세요.
+        다음은 사용자의 식사 데이터입니다. 이를 분석하여 다음 끼니에 대한 식사 추천을 해주세요.
 
         **일일 권장 영양소 섭취량:**
         - 칼로리: {data['reco_cal']}kcal
@@ -335,13 +397,18 @@ def recommend_meal():
         - 식사/간식 칼로리 비율: 식사 {data['meal_snack'][0]}kcal, 간식 {data['meal_snack'][1]}kcal
         - 가공식품/자연식 횟수: 가공식품 {data['processed'][0]}회, 자연식 {data['processed'][1]}회
 
-        위 데이터를 바탕으로 다음 끼니에 대한 구체적이고 실용적인 식사 추천을 해주세요:
+        위 데이터를 바탕으로 다음 끼니에 대한 구체적인 식사 메뉴 3가지 이상을 추천해주세요:
         1. 권장량 대비 부족하거나 과다한 영양소 파악
         2. 가공식품 섭취 빈도 고려
         3. 균형잡힌 영양소 구성을 위한 구체적인 음식 추천
         4. 실천 가능한 식사 메뉴 제안
+        5. 대중적으로 인기 있는 메뉴로 추천
 
-        3-4줄로 간결하고 실용적인 추천사항을 작성해주세요.
+        다음 JSON 형식으로 응답해주세요:
+        {{
+            "menu": ["추천 메뉴 1", "추천 메뉴 2", "추천 메뉴 3"],
+            "reason": "메뉴 선정 이유 및 영양학적 근거"
+        }}
         """
         
         # ThrottlingException 처리를 위한 재시도 로직
@@ -358,12 +425,36 @@ def recommend_meal():
                 else:
                     raise e
         
-        return jsonify({
-            "status": "success",
-            "data": {
-                "reco": result.strip()
-            }
-        })
+        try:
+            # JSON 파싱 시도
+            start_idx = result.find('{')
+            end_idx = result.rfind('}') + 1
+            if start_idx != -1 and end_idx != 0:
+                json_str = result[start_idx:end_idx]
+                parsed_result = json.loads(json_str)
+                
+                return jsonify({
+                    "status": "success",
+                    "data": parsed_result
+                })
+            else:
+                # JSON 파싱 실패 시 기본 응답
+                return jsonify({
+                    "status": "success",
+                    "data": {
+                        "menu": ["현미밥과 구운 연어", "두부 샐러드", "닭가슴살 볶음"],
+                        "reason": "균형잡힌 영양소 섭취를 위한 추천입니다."
+                    }
+                })
+                
+        except json.JSONDecodeError:
+            return jsonify({
+                "status": "success",
+                "data": {
+                    "menu": ["현미밥과 구운 연어", "두부 샐러드", "닭가슴살 볶음"],
+                    "reason": "균형잡힌 영양소 섭취를 위한 추천입니다."
+                }
+            })
             
     except Exception as e:
         print(f"Error in recommend_meal: {str(e)}")

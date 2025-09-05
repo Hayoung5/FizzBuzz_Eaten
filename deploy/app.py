@@ -20,6 +20,69 @@ ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def get_dummy_nutrition(food_name):
+    """음식명에 따른 더미 영양 정보 반환"""
+    nutrition_db = {
+        '피자': {
+            "calories": 35,
+            "carbohydrates": 7.0,
+            "protein": 1.5,
+            "fat": 0.5,
+            "sugar": 1.0,
+            "sodium": 800,
+            "fiber": 2.5
+        },
+        '햄버거': {
+            "calories": 218,
+            "carbohydrates": 44.8,
+            "protein": 4.5,
+            "fat": 1.8,
+            "sugar": 0.8,
+            "sodium": 2,
+            "fiber": 3.5
+        },
+        '김밥': {
+            "calories": 250,
+            "carbohydrates": 35.0,
+            "protein": 8.0,
+            "fat": 8.5,
+            "sugar": 2.0,
+            "sodium": 450,
+            "fiber": 2.0
+        },
+        '라면': {
+            "calories": 380,
+            "carbohydrates": 55.0,
+            "protein": 9.0,
+            "fat": 14.0,
+            "sugar": 3.0,
+            "sodium": 1200,
+            "fiber": 1.5
+        },
+        '비빔밥': {
+            "calories": 320,
+            "carbohydrates": 48.0,
+            "protein": 12.0,
+            "fat": 9.0,
+            "sugar": 4.0,
+            "sodium": 650,
+            "fiber": 4.0
+        }
+    }
+    
+    # 기본값 (음식을 찾을 수 없는 경우)
+    default_nutrition = {
+        "calories": 200,
+        "carbohydrates": 30.0,
+        "protein": 8.0,
+        "fat": 6.0,
+        "sugar": 2.0,
+        "sodium": 400,
+        "fiber": 2.0
+    }
+    
+    return nutrition_db.get(food_name, default_nutrition)
+
 @app.route('/')
 def index():
     return jsonify({
@@ -48,10 +111,10 @@ def analyze_food():
             }), 400
         
         file = request.files['image']
-        time_param = request.form.get('time')
+        time = request.form.get('time')
         portion_size = request.form.get('portion_size')
         
-        if not file or not time_param or not portion_size:
+        if not file or not time or not portion_size:
             return jsonify({
                 "status": "error",
                 "message": "Invalid image format or missing required fields",
@@ -73,30 +136,30 @@ def analyze_food():
         
         # AI 분석 프롬프트
         prompt = f"""
-        이 이미지에 있는 모든 음식을 정확히 식별하고 분석해주세요.
+        이미지에 있는 어떤이 음식이 있는지 요리 단위로 조사하십시오.
         
-        각 음식에 대해 다음 정보를 제공해주세요:
-        1. 음식명 (정확한 한국어 명칭)
-        2. 예상 제공량 (일반적인 1인분 기준)
-        3. 가공식품 여부 (공장에서 제조된 식품인지 판단)
-        4. 간식 여부 (주식이 아닌 간식류인지 판단)
+        각 음식명 마다 아래의 정보가 모두 포함되도록 정보를 추출하십시오.
+        1. 음식명 (한국어)
+        2. 제공량 (예상되는 양)
+        3. 가공식품 여부 (true/false)
+        4. 간식 여부 (true/false)
         
-        가공식품 판단 기준:
-        - 라면, 과자, 음료수, 햄, 소시지 등 = true
-        - 밥, 김치, 나물, 구이류, 찌개 등 = false
-        
-        간식 판단 기준:
-        - 과자, 사탕, 음료수, 아이스크림 등 = true
-        - 밥, 반찬, 국물류 등 주식 = false
-        
-        응답은 반드시 다음 JSON 배열 형식으로만 답변해주세요:
+        응답은 반드시 다음 JSON 형식으로만 답변해주세요:
         [
-            {{
-                "food_name": "음식명",
+            {
+                {
+                "food_name": "음식명(ex.김밥)",
                 "portion_size": "예상 제공량",
-                "is_processed": true 또는 false,
-                "is_snack": true 또는 false
-            }}
+                "is_processed": "true 또는 false",
+                "is_snack": "true 또는 false"
+                },
+                {
+                "food_name": "음식명(ex.라면)",
+                "portion_size": "예상 제공량",
+                "is_processed": "true 또는 false",
+                "is_snack": "true 또는 false"
+                },
+            }
         ]
         """
         
@@ -109,6 +172,10 @@ def analyze_food():
         if start_idx != -1 and end_idx != 0:
             json_str = result[start_idx:end_idx]
             parsed_result = json.loads(json_str)
+            
+            # 영양 정보 추가
+            for food_item in parsed_result:
+                food_item['nutrition'] = get_dummy_nutrition(food_item['food_name'])
             
             return jsonify({
                 "status": "success",
@@ -164,48 +231,48 @@ def generate_health_report():
                     "code": "INVALID_DATA"
                 }), 400
         
-        # 데이터 테이블 생성
+        # AI 분석 프롬프트
         table_rows = []
         for i in range(len(data['times'])):
             day = i + 1
             time_str = data['times'][i]
-            cal = data['cal_log'][i] if i < len(data['cal_log']) else 0
-            carbo = data.get('carbo_log', [0]*len(data['times']))[i] if i < len(data.get('carbo_log', [])) else 0
-            protein = data.get('protein_log', [0]*len(data['times']))[i] if i < len(data.get('protein_log', [])) else 0
-            fat = data.get('fat_log', [0]*len(data['times']))[i] if i < len(data.get('fat_log', [])) else 0
-            sugar = data.get('sugar_log', [0]*len(data['times']))[i] if i < len(data.get('sugar_log', [])) else 0
-            sodium = data.get('sodium_log', [0]*len(data['times']))[i] if i < len(data.get('sodium_log', [])) else 0
+            cal = data['cal_log'][i]
+            carbo = data['carbo_log'][i]
+            protein = data['protein_log'][i]
+            fat = data['fat_log'][i]
+            sugar = data['sugar_log'][i]
+            sodium = data['sodium_log'][i]
             
             table_rows.append(f"{day}일차 | {time_str} | {cal}kcal | {carbo}g | {protein}g | {fat}g | {sugar}g | {sodium}mg")
-        
-        nutrition_table = "\\n".join(table_rows)
-        
+
+        nutrition_table = "\n".join(table_rows)
+
         # AI 분석 프롬프트 개선
         prompt = f"""
         다음은 사용자의 식사 데이터입니다. 이를 분석하여 건강 리포트를 생성해주세요.
-        
+
         **일일 권장 영양소 섭취량:**
         - 칼로리: {data['reco_cal']}kcal
-        - 탄수화물: {data.get('reco_carbo', 300)}g
-        - 단백질: {data.get('reco_protein', 65)}g
-        - 지방: {data.get('reco_fat', 50)}g
-        - 당류: {data.get('reco_sugar', 25)}g
-        - 나트륨: {data.get('reco_sodium', 2000)}mg
-        
+        - 탄수화물: {data['reco_carbo']}g
+        - 단백질: {data['reco_protein']}g
+        - 지방: {data['reco_fat']}g
+        - 당류: {data['reco_sugar']}g
+        - 나트륨: {data['reco_sodium']}mg
+
         **식사 기록:**
         일차 | 시간 | 칼로리 | 탄수화물 | 단백질 | 지방 | 당류 | 나트륨
         {nutrition_table}
-        
+
         **추가 정보:**
         - 식사/간식 칼로리 비율: 식사 {data['meal_snack'][0]}kcal, 간식 {data['meal_snack'][1]}kcal
         - 가공식품/자연식 횟수: 가공식품 {data['processed'][0]}회, 자연식 {data['processed'][1]}회
-        
+
         위 데이터를 바탕으로 다음을 분석해주세요:
         1. 식사 패턴 (시간대, 규칙성 등)
         2. 가공식품과 간식 비율 분석
         3. 권장량 대비 실제 섭취량 비교
         4. 개선 방안 및 추천사항
-        
+
         다음 JSON 형식으로 응답해주세요:
         {{
             "meal_pattern": "식사 패턴 분석 결과 (시간대, 규칙성 등)",
@@ -214,9 +281,9 @@ def generate_health_report():
         }}
         """
         
+        print(prompt)
         # ThrottlingException 처리를 위한 재시도 로직
         max_retries = 3
-        result = None
         for attempt in range(max_retries):
             try:
                 result = bedrock_service.chat(prompt)
@@ -228,9 +295,6 @@ def generate_health_report():
                     continue
                 else:
                     raise e
-        
-        if result is None:
-            raise Exception("Failed to get response after retries")
         
         try:
             # JSON 파싱 시도
@@ -297,33 +361,33 @@ def recommend_meal():
                     "code": "INVALID_DATA"
                 }), 400
         
-        # 데이터 테이블 생성 (3일간)
+        # AI 분석 프롬프트
         table_rows = []
         for i in range(len(data['times'])):
             day = i + 1
             time_str = data['times'][i]
-            cal = data['cal_log'][i] if i < len(data['cal_log']) else 0
-            carbo = data.get('carbo_log', [0]*len(data['times']))[i] if i < len(data.get('carbo_log', [])) else 0
-            protein = data.get('protein_log', [0]*len(data['times']))[i] if i < len(data.get('protein_log', [])) else 0
-            fat = data.get('fat_log', [0]*len(data['times']))[i] if i < len(data.get('fat_log', [])) else 0
-            sugar = data.get('sugar_log', [0]*len(data['times']))[i] if i < len(data.get('sugar_log', [])) else 0
-            sodium = data.get('sodium_log', [0]*len(data['times']))[i] if i < len(data.get('sodium_log', [])) else 0
+            cal = data['cal_log'][i]
+            carbo = data['carbo_log'][i]
+            protein = data['protein_log'][i]
+            fat = data['fat_log'][i]
+            sugar = data['sugar_log'][i]
+            sodium = data['sodium_log'][i]
             
             table_rows.append(f"{day}일차 | {time_str} | {cal}kcal | {carbo}g | {protein}g | {fat}g | {sugar}g | {sodium}mg")
 
-        nutrition_table = "\\n".join(table_rows)
+        nutrition_table = "\n".join(table_rows)
 
         # AI 분석 프롬프트 개선
         prompt = f"""
-        다음은 사용자의 3일간 식사 데이터입니다. 이를 분석하여 다음 끼니에 대한 식사 추천을 해주세요.
+        다음은 사용자의 식사 데이터입니다. 이를 분석하여 다음 끼니에 대한 식사 추천을 해주세요.
 
         **일일 권장 영양소 섭취량:**
         - 칼로리: {data['reco_cal']}kcal
-        - 탄수화물: {data.get('reco_carbo', 300)}g
-        - 단백질: {data.get('reco_protein', 65)}g
-        - 지방: {data.get('reco_fat', 50)}g
-        - 당류: {data.get('reco_sugar', 25)}g
-        - 나트륨: {data.get('reco_sodium', 2000)}mg
+        - 탄수화물: {data['reco_carbo']}g
+        - 단백질: {data['reco_protein']}g
+        - 지방: {data['reco_fat']}g
+        - 당류: {data['reco_sugar']}g
+        - 나트륨: {data['reco_sodium']}mg
 
         **3일간 식사 기록:**
         일차 | 시간 | 칼로리 | 탄수화물 | 단백질 | 지방 | 당류 | 나트륨
@@ -333,18 +397,21 @@ def recommend_meal():
         - 식사/간식 칼로리 비율: 식사 {data['meal_snack'][0]}kcal, 간식 {data['meal_snack'][1]}kcal
         - 가공식품/자연식 횟수: 가공식품 {data['processed'][0]}회, 자연식 {data['processed'][1]}회
 
-        위 데이터를 바탕으로 다음 끼니에 대한 구체적이고 실용적인 식사 추천을 해주세요:
+        위 데이터를 바탕으로 다음 끼니에 대한 구체적인 식사 메뉴 3가지 이상을 추천해주세요:
         1. 권장량 대비 부족하거나 과다한 영양소 파악
         2. 가공식품 섭취 빈도 고려
         3. 균형잡힌 영양소 구성을 위한 구체적인 음식 추천
         4. 실천 가능한 식사 메뉴 제안
 
-        3-4줄로 간결하고 실용적인 추천사항을 작성해주세요.
+        다음 JSON 형식으로 응답해주세요:
+        {{
+            "menu": ["추천 메뉴 1", "추천 메뉴 2", "추천 메뉴 3"],
+            "reason": "메뉴 선정 이유 및 영양학적 근거"
+        }}
         """
         
         # ThrottlingException 처리를 위한 재시도 로직
         max_retries = 3
-        result = None
         for attempt in range(max_retries):
             try:
                 result = bedrock_service.chat(prompt)
@@ -357,15 +424,36 @@ def recommend_meal():
                 else:
                     raise e
         
-        if result is None:
-            raise Exception("Failed to get response after retries")
-        
-        return jsonify({
-            "status": "success",
-            "data": {
-                "reco": result.strip()
-            }
-        })
+        try:
+            # JSON 파싱 시도
+            start_idx = result.find('{')
+            end_idx = result.rfind('}') + 1
+            if start_idx != -1 and end_idx != 0:
+                json_str = result[start_idx:end_idx]
+                parsed_result = json.loads(json_str)
+                
+                return jsonify({
+                    "status": "success",
+                    "data": parsed_result
+                })
+            else:
+                # JSON 파싱 실패 시 기본 응답
+                return jsonify({
+                    "status": "success",
+                    "data": {
+                        "menu": ["현미밥과 구운 연어", "두부 샐러드", "닭가슴살 볶음"],
+                        "reason": "균형잡힌 영양소 섭취를 위한 추천입니다."
+                    }
+                })
+                
+        except json.JSONDecodeError:
+            return jsonify({
+                "status": "success",
+                "data": {
+                    "menu": ["현미밥과 구운 연어", "두부 샐러드", "닭가슴살 볶음"],
+                    "reason": "균형잡힌 영양소 섭취를 위한 추천입니다."
+                }
+            })
             
     except Exception as e:
         print(f"Error in recommend_meal: {str(e)}")
@@ -378,4 +466,4 @@ def recommend_meal():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)

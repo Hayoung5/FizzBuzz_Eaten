@@ -141,4 +141,8 @@ FizzBuzz_Eaten/
 
 ## 라이선스
 
+<<<<<<< HEAD
 MIT License
+=======
+MIT License
+>>>>>>> 72e62887c23b625ebe3d5d2d2ef3e1a7b915d4ca
