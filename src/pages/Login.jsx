@@ -1,5 +1,6 @@
 import '../styles/base.css'
 
+// Force rebuild - v1.0.1
 const Login = () => {
   const handleKakaoLogin = () => {
     window.location.href = '/api/auth/kakao'
