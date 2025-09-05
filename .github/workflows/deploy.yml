@@ -1,4 +1,4 @@
-name: Deploy to CloudFront
+name: Deploy to EC2
 
 on:
   push:
@@ -24,17 +24,35 @@ jobs:
     - name: Build
       run: npm run build
     
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
+    - name: Deploy files with rsync
+      uses: burnett01/rsync-deployments@6.0.0
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        switches: -avzr --delete --exclude='node_modules' --exclude='*.log'
+        path: dist/
+        remote_path: /home/ec2-user/nutrition-app-frontend/dist/
+        remote_host: 44.214.236.166
+        remote_user: ec2-user
+        remote_key: ${{ secrets.EC2_SSH_KEY }}
     
-    - name: Deploy to S3
-      run: |
-        aws s3 sync dist/ s3://nutrition-app-frontend --delete
+    - name: Deploy nginx config
+      uses: burnett01/rsync-deployments@6.0.0
+      with:
+        switches: -avzr
+        path: nginx.conf
+        remote_path: /home/ec2-user/
+        remote_host: 44.214.236.166
+        remote_user: ec2-user
+        remote_key: ${{ secrets.EC2_SSH_KEY }}
     
-    - name: Invalidate CloudFront
-      run: |
-        aws cloudfront create-invalidation --distribution-id d1jznem1qqdakq --paths "/*"
+    - name: Setup nginx and restart
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo cp nginx.conf /etc/nginx/sites-available/nutrition-app-frontend
+          sudo ln -sf /etc/nginx/sites-available/nutrition-app-frontend /etc/nginx/sites-enabled/
+          sudo rm -f /etc/nginx/sites-enabled/default
+          sudo nginx -t && sudo systemctl restart nginx
+          sudo ufw allow 3001
