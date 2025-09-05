@@ -1,0 +1,34 @@
+{
+  "CallerReference": "nutrition-20250905",
+  "Comment": "Nutrition Analyzer HTTPS",
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "nutrition-origin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "TrustedSigners": {
+      "Enabled": false,
+      "Quantity": 0
+    },
+    "ForwardedValues": {
+      "QueryString": false,
+      "Cookies": {
+        "Forward": "none"
+      }
+    },
+    "MinTTL": 0
+  },
+  "Origins": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "Id": "nutrition-origin",
+        "DomainName": "nutrition-alb-1756359778.us-east-1.elb.amazonaws.com",
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "http-only"
+        }
+      }
+    ]
+  },
+  "Enabled": true
+}
