@@ -29,10 +29,35 @@ const UserSetup = () => {
     setErrors(newErrors)
     
     if (Object.keys(newErrors).length === 0) {
-      // 임시로 더미 사용자 ID 생성
-      const dummyUserId = Date.now().toString()
-      localStorage.setItem('userId', dummyUserId)
-      navigate('/dashboard')
+      try {
+        // URL에서 OAuth 정보 가져오기 (카카오 로그인 후 전달됨)
+        const urlParams = new URLSearchParams(window.location.search)
+        const oauthProvider = urlParams.get('provider') || 'kakao'
+        const oauthId = urlParams.get('oauth_id')
+        const email = urlParams.get('email')
+        const name = urlParams.get('name')
+        
+        const userData = {
+          oauth_provider: oauthProvider,
+          oauth_id: oauthId,
+          email: email,
+          name: name,
+          age: parseInt(formData.age),
+          gender: formData.gender,
+          activity: formData.activity
+        }
+        
+        const response = await userService.registerUser(userData)
+        
+        if (response.success) {
+          localStorage.setItem('token', response.token)
+          localStorage.setItem('userId', response.user_id)
+          navigate('/dashboard')
+        }
+      } catch (error) {
+        console.error('User registration error:', error)
+        setErrors({ submit: '사용자 등록 중 오류가 발생했습니다.' })
+      }
     }
   }
 
@@ -124,6 +149,12 @@ const UserSetup = () => {
           <p className="text-sm text-gray-500 mb-6 text-center">
             📊 입력된 정보는 <b>맞춤형 분석과 식사 추천</b>에 활용됩니다.
           </p>
+
+          {errors.submit && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+              <p className="text-red-600 text-sm">{errors.submit}</p>
+            </div>
+          )}
 
           <button
             type="submit"
