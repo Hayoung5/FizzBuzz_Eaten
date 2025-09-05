@@ -11,9 +11,15 @@ const kakaoCallback = (req, res) => {
       return res.redirect('https://d1jznem1qqdakq.cloudfront.net/login?error=auth_failed');
     }
     
-    // 모든 사용자 - JWT 토큰 생성하여 대시보드로
-    const token = generateToken(user.id);
-    res.redirect(`https://d1jznem1qqdakq.cloudfront.net/dashboard?token=${token}&user_id=${user.id}`);
+    // 신규 사용자인지 확인
+    if (user.isNewUser) {
+      // 신규 사용자 - 추가 정보 입력 페이지로
+      res.redirect(`https://d1jznem1qqdakq.cloudfront.net/setup?provider=kakao&oauth_id=${user.oauth_id}&email=${user.email}&name=${encodeURIComponent(user.name || '')}`);
+    } else {
+      // 기존 사용자 - JWT 토큰 생성하여 대시보드로
+      const token = generateToken(user.id);
+      res.redirect(`https://d1jznem1qqdakq.cloudfront.net/dashboard?token=${token}&user_id=${user.id}`);
+    }
     
   } catch (error) {
     console.error('Kakao callback error:', error);
