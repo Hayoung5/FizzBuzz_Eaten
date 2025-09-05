@@ -24,6 +24,19 @@ jobs:
     - name: Build
       run: npm run build
     
+    - name: Prepare deployment directory
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # Create directory if it doesn't exist
+          mkdir -p /home/ec2-user/nutrition-app-frontend/dist/
+          # Fix ownership and permissions
+          sudo chown -R ec2-user:ec2-user /home/ec2-user/nutrition-app-frontend/
+          chmod -R 755 /home/ec2-user/nutrition-app-frontend/
+    
     - name: Deploy files with rsync
       uses: burnett01/rsync-deployments@6.0.0
       with:
