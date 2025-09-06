@@ -48,15 +48,20 @@ const completeSignup = async (req, res) => {
   try {
     const { oauth_provider, oauth_id, email, name, age, gender, activity } = req.body;
     
-    if (!age || !gender || !activity) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
+    // 기본값 설정
+    const userData = {
+      oauth_provider: oauth_provider || 'kakao',
+      oauth_id: oauth_id || null,
+      email: email || null,
+      name: name || null,
+      age: age || 25,
+      gender: gender || 'male',
+      activity: activity || 'moderate'
+    };
     
     // 사용자 생성
     const User = require('../models/User');
-    const userId = await User.createOAuthUser({
-      oauth_provider, oauth_id, email, name, age, gender, activity
-    });
+    const userId = await User.createOAuthUser(userData);
     
     // JWT 토큰 생성
     const token = generateToken(userId);
