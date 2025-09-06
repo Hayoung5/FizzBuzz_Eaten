@@ -206,7 +206,7 @@ const BarcodeAnalysis = () => {
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 text-center shadow-2xl">
             <div className="text-4xl mb-4">⚠️</div>
             <p className="text-gray-800 mb-6 leading-relaxed">{modalMessage}</p>
-            <Button variant="blue" onClick={() => setShowModal(false)}>
+            <Button variant="blue" onClick={() => setShowModal(false)} className="mx-auto">
               확인
             </Button>
           </div>

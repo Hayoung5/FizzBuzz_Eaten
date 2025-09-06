@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reportService } from '../services/api';
+import PageLayout from '../components/PageLayout';
+import Button from '../components/Button';
 
 const Report = () => {
   const [reportData, setReportData] = useState(null);
@@ -27,32 +29,27 @@ const Report = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">리포트를 생성하고 있습니다...</p>
+      <PageLayout
+        title="📈 리포트 생성 중..."
+        subtitle="나의 식사 습관을 분석하고 있습니다. 잠시만 기다려주세요!"
+      >
+        <div className="flex justify-center gap-2 mb-5">
+          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-lg mx-auto bg-white rounded-3xl shadow-lg p-7" 
-           style={{
-             background: 'linear-gradient(135deg, #fefefe, #f7faff)',
-             boxShadow: '0 6px 14px rgba(0,0,0,0.08)'
-           }}>
-        
-        {/* 리포트 제목 */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
-            📝 {reportData?.name || '사용자'}님의 주간 건강 리포트
-          </h2>
-          <p className="text-sm text-gray-500">
-            (2025년 8월 29일 ~ 9월 4일)
-          </p>
-        </div>
+    <PageLayout
+      title={`📝 ${reportData?.name || '사용자'}님의 주간 건강 리포트`}
+      subtitle="(2025년 8월 29일 ~ 9월 4일)"
+      showBackButton={true}
+      onBack={() => navigate('/statistics')}
+    >
+      <div className="space-y-6 text-left">
 
         {/* 1. 식사 패턴 분석 */}
         <div className="mb-6">
@@ -137,21 +134,23 @@ const Report = () => {
 
         {/* 버튼들 */}
         <div className="mt-8 flex gap-3">
-          <button
+          <Button
             onClick={() => navigate('/statistics')}
-            className="flex-1 px-4 py-3 bg-gray-500 text-white rounded-xl font-medium hover:bg-gray-600 transition-colors"
+            variant="secondary"
+            className="flex-1"
           >
             통계로 돌아가기
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigate('/meal-recommendation')}
-            className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl font-medium hover:bg-green-600 transition-colors"
+            variant="primary"
+            className="flex-1"
           >
             추천 메뉴 제안
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

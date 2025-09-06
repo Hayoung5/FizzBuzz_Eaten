@@ -15,7 +15,7 @@ const PageLayout = ({
         {showBackButton && (
           <button
             onClick={onBack}
-            className="absolute top-6 left-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+            className="absolute top-6 left-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors shadow-none"
             title="뒤로가기"
           >
             <span className="text-lg">←</span>
