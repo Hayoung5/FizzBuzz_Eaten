@@ -10,27 +10,27 @@ const kakaoCallback = (req, res) => {
     
     if (!user) {
       console.log('No user found, redirecting to login');
-      return res.redirect('https://d1jznem1qqdakq.cloudfront.net/login?error=auth_failed');
+      return res.redirect('http://44.214.236.166/login?error=auth_failed');
     }
     
     // 신규 사용자인지 확인
     console.log('User isNewUser:', user.isNewUser);
     if (user.isNewUser) {
       // 신규 사용자 - 추가 정보 입력 페이지로
-      const setupUrl = `https://d1jznem1qqdakq.cloudfront.net/setup?provider=kakao&oauth_id=${user.oauth_id}&email=${user.email}&name=${encodeURIComponent(user.name || '')}`;
+      const setupUrl = `http://44.214.236.166/setup?provider=kakao&oauth_id=${user.oauth_id}&email=${user.email}&name=${encodeURIComponent(user.name || '')}`;
       console.log('Redirecting new user to setup:', setupUrl);
       res.redirect(setupUrl);
     } else {
       // 기존 사용자 - JWT 토큰 생성하여 대시보드로
       const token = generateToken(user.id);
-      const dashboardUrl = `https://d1jznem1qqdakq.cloudfront.net/dashboard?token=${token}&user_id=${user.id}`;
+      const dashboardUrl = `http://44.214.236.166/dashboard?token=${token}&user_id=${user.id}`;
       console.log('Redirecting existing user to dashboard:', dashboardUrl);
       res.redirect(dashboardUrl);
     }
     
   } catch (error) {
     console.error('Kakao callback error:', error);
-    res.redirect('https://d1jznem1qqdakq.cloudfront.net/login?error=server_error');
+    res.redirect('http://44.214.236.166/login?error=server_error');
   }
 };
 
