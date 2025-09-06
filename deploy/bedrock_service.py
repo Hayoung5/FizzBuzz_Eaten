@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class BedrockService:
-    def __init__(self, model_id = 'anthropic.claude-opus-4-20250514-v1:0'):
+    def __init__(self, model_id = 'us.anthropic.claude-opus-4-20250514-v1:0'):
 
         self.model_id = model_id
         self.bedrock = boto3.client(
@@ -33,7 +33,7 @@ class BedrockService:
     def generate_claude_text(self, prompt):
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 1000,
+            "max_tokens": 800,
             "messages": [{"role": "user", "content": prompt}]
         }
         
@@ -48,16 +48,20 @@ class BedrockService:
     
     def generate_claude_vision(self, image_path, prompt):
         with Image.open(image_path) as img:
+            max_size = 1024
+            if max(img.size) > max_size:
+                img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+            
             if img.mode != 'RGB':
                 img = img.convert('RGB')
             
             buffer = io.BytesIO()
-            img.save(buffer, format='JPEG', quality=85)
+            img.save(buffer, format='JPEG', quality=100, optimize=True)
             image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         
         body = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 1000,
+            "max_tokens": 500,
             "messages": [
                 {
                     "role": "user",
@@ -79,11 +83,7 @@ class BedrockService:
             ]
         }
         
-        response = self.bedrock.invoke_model(
-            modelId=self.model_id,
-            body=json.dumps(body)
-        )
-        
+        response = self._invoke_with_fallback(body)
         result = json.loads(response['body'].read())
         return result['content'][0]['text']
     
