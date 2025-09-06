@@ -23,6 +23,17 @@ jobs:
     - name: Build frontend
       run: npm run build
     
+    - name: Fix permissions before deploy
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo mkdir -p /var/www/html
+          sudo chown -R ec2-user:ec2-user /var/www/html
+          sudo chmod -R 755 /var/www/html
+    
     - name: Deploy frontend with rsync
       uses: burnett01/rsync-deployments@6.0.0
       with:
@@ -59,4 +70,8 @@ jobs:
           NGINX_EOF
           
           sudo systemctl reload nginx
+          
+          # Fix final permissions
+          sudo chown -R nginx:nginx /var/www/html
+          sudo chmod -R 755 /var/www/html
           echo "Frontend deployment completed"
