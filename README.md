@@ -89,7 +89,11 @@ Eaten은 사용자가 업로드한 음식 사진을 AI로 분석하여 영양 �
   <img src="./readme/image.png" alt="시스템 아키텍처" width="800">
 </div>
 
-## 빠른 시작
+## 시연.gif
+![통계_및_레포트](https://github.com/user-attachments/assets/87239499-8101-4b12-a270-fdace7f912d8)
+![식사분석_리포트](https://github.com/user-attachments/assets/1aa0d023-2385-4c42-85a9-835d944b457e)
+![사진내_음식분석](https://github.com/user-attachments/assets/918a5620-662e-4c45-afc2-579c0442ccb1)
+![사용자정보_입력](https://github.com/user-attachments/assets/ae434a98-8c9c-43a1-9e35-de076f703334)
 
 ### 사전 요구사항
 - Node.js 18+ 
