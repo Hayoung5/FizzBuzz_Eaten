@@ -32,6 +32,7 @@ def get_food_nutrition(food_name):
         }
 
         response = requests.get(base_url, params=params)
+        print("response : ", response)
         response.raise_for_status()
         
         data = response.json()
@@ -221,6 +222,8 @@ def analyze_food():
         end_idx = result.rfind(']') + 1
         if start_idx != -1 and end_idx != 0:
             json_str = result[start_idx:end_idx]
+            json_str = json_str.replace("'", '"')
+    
             parsed_result = json.loads(json_str)
             
             # 영양 정보 추가
@@ -331,7 +334,6 @@ def generate_health_report():
         }}
         """
         
-        print(prompt)
         # ThrottlingException 처리를 위한 재시도 로직
         max_retries = 3
         for attempt in range(max_retries):
@@ -352,6 +354,8 @@ def generate_health_report():
             end_idx = result.rfind('}') + 1
             if start_idx != -1 and end_idx != 0:
                 json_str = result[start_idx:end_idx]
+                json_str = json_str.replace("'", '"')
+
                 parsed_result = json.loads(json_str)
                 
                 return jsonify({
@@ -439,7 +443,7 @@ def recommend_meal():
         - 당류: {data['reco_sugar']}g
         - 나트륨: {data['reco_sodium']}mg
 
-        **3일간 식사 기록:**
+        **식사 기록:**
         일차 | 시간 | 칼로리 | 탄수화물 | 단백질 | 지방 | 당류 | 나트륨
         {nutrition_table}
 
@@ -481,6 +485,8 @@ def recommend_meal():
             end_idx = result.rfind('}') + 1
             if start_idx != -1 and end_idx != 0:
                 json_str = result[start_idx:end_idx]
+                json_str = json_str.replace("'", '"')
+
                 parsed_result = json.loads(json_str)
                 
                 return jsonify({
@@ -560,13 +566,15 @@ def analyze_barcode():
         - JSON 형식을 정확히 지켜주세요
         """
         
-        barcode_result = bedrock_service.generate_claude_vision_v1(tmp_file_path, prompt)
+        barcode_result = bedrock_service.analyze_image(tmp_file_path, prompt)
 
         # JSON 파싱 시도
         start_idx = barcode_result.find('{')
         end_idx = barcode_result.rfind('}') + 1
         if start_idx != -1 and end_idx != 0:
             json_str = barcode_result[start_idx:end_idx]
+            json_str = json_str.replace("'", '"')
+
             parsed_result = json.loads(json_str)
             
             # has_barcode가 true인 경우에만 바코드 번호 반환
