@@ -8,36 +8,38 @@ const kakaoCallback = (req, res) => {
     const user = req.user;
     
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Authentication failed' 
-      });
+      return res.redirect('/auth/callback?success=false&error=auth_failed');
     }
     
     const isNewUser = !user.age || !user.gender || !user.activity;
     
     if (isNewUser) {
-      return res.json({
-        success: true,
-        isNewUser: true,
-        user: {
-          oauth_id: user.oauth_id,
-          email: user.email,
-          name: user.name
-        }
+      const params = new URLSearchParams({
+        success: 'true',
+        isNewUser: 'true',
+        oauth_id: user.oauth_id,
+        email: user.email || '',
+        name: user.name || ''
       });
+      return res.redirect(`/auth/callback?${params.toString()}`);
     } else {
       const token = generateToken(user.id);
-      return res.json({
-        success: true,
-        isNewUser: false,
-        token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email
-        }
+      const params = new URLSearchParams({
+        success: 'true',
+        isNewUser: 'false',
+        token: token,
+        user_id: user.id,
+        name: user.name || '',
+        email: user.email || ''
       });
+      return res.redirect(`/auth/callback?${params.toString()}`);
+    }
+    
+  } catch (error) {
+    console.error('Kakao callback error:', error);
+    res.redirect('/auth/callback?success=false&error=server_error');
+  }
+};
     }
     
   } catch (error) {
