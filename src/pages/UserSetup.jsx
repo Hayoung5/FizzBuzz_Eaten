@@ -1,17 +1,38 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { userService } from '../services/api'
 import PageLayout from '../components/PageLayout'
 import Button from '../components/Button'
 
 const UserSetup = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [formData, setFormData] = useState({
     age: '',
     gender: '',
     activity: ''
   })
   const [errors, setErrors] = useState({})
+  const [userInfo, setUserInfo] = useState(null)
+
+  useEffect(() => {
+    // AuthCallback에서 전달된 사용자 정보 확인
+    if (location.state?.user) {
+      setUserInfo(location.state.user)
+    } else {
+      // URL 파라미터에서 사용자 정보 확인 (기존 방식 호환)
+      const urlParams = new URLSearchParams(location.search)
+      const oauth_id = urlParams.get('oauth_id')
+      const email = urlParams.get('email')
+      const name = urlParams.get('name')
+      
+      if (oauth_id) {
+        setUserInfo({ oauth_id, email, name })
+      } else {
+        navigate('/login')
+      }
+    }
+  }, [location, navigate])
 
   const validateForm = () => {
     const newErrors = {}
@@ -32,17 +53,16 @@ const UserSetup = () => {
     
     if (Object.keys(newErrors).length === 0) {
       try {
-        const urlParams = new URLSearchParams(window.location.search)
-        const oauthProvider = urlParams.get('provider') || 'kakao'
-        const oauthId = urlParams.get('oauth_id')
-        const email = urlParams.get('email')
-        const name = urlParams.get('name')
+        if (!userInfo) {
+          setErrors({ general: '사용자 정보를 찾을 수 없습니다.' })
+          return
+        }
         
         const userData = {
-          oauth_provider: oauthProvider,
-          oauth_id: oauthId,
-          email: email,
-          name: name,
+          oauth_provider: 'kakao',
+          oauth_id: userInfo.oauth_id,
+          email: userInfo.email,
+          name: userInfo.name,
           age: parseInt(formData.age),
           gender: formData.gender,
           activity: formData.activity
