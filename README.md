@@ -1,4 +1,4 @@
-# Eaten 🍎 : AI 기반 영양 분석 및 건강 관리 플랫폼
+# Eaten : AI 기반 영양 분석 및 건강 관리 플랫폼
 
 Amazon Q Developer을 활용한 음식 사진 분석 및 개인 맞춤형 건강 관리 서비스입니다.
 
@@ -272,7 +272,7 @@ cd AI
 python run_server.py
 ```
 
-## 📁 프로젝트 구조
+## 프로젝트 구조
 
 ```
 FizzBuzz_Eaten/
