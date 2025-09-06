@@ -80,7 +80,7 @@ const BarcodeAnalysis = () => {
       formData.append('photo', selectedFile)
       
       const response = await photoService.analyzeBarcode(formData)
-      
+      console.log(response)
       const result = {
         name: response.food_name,
         serving: response.portion_size || '1개',

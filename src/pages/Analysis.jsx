@@ -74,9 +74,10 @@ const Analysis = () => {
     try {
       const userId = localStorage.getItem('userId') || 2
       const formData = new FormData()
-      formData.append('user_id', userId)
+      formData.append('user_id', 1)
       formData.append('time', new Date().toISOString())
-      formData.append('image', selectedFile)
+      formData.append('portion_size', "1인분")
+      formData.append('photo', selectedFile)
       
       const response = await photoService.analyzePhoto(formData)
       

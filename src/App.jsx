@@ -7,8 +7,7 @@ import BarcodeAnalysis from './pages/BarcodeAnalysis'
 import Statistics from './pages/Statistics'
 import Report from './pages/Report'
 import UserSetup from './pages/UserSetup'
-import Login from './pages/Login'
-import AuthCallback from './pages/AuthCallback'
+
 import PatternAnalysis from './pages/PatternAnalysis'
 import MealRecommendation from './pages/MealRecommendation'
 import Profile from './pages/Profile'
@@ -19,8 +18,7 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
+
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/setup" element={<UserSetup />} />
           <Route path="/pattern-analysis" element={<PatternAnalysis />} />

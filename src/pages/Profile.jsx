@@ -12,9 +12,10 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const userId = localStorage.getItem('userId') || '2';
+        const userId = 1;
         
-        const response = await fetch(`http://44.214.236.166:3000/api/user_info/${userId}`);
+        const response = await fetch(`http://localhost:3000/api/user_info/${userId}`);
+        console.log(response)
         if (response.ok) {
           const data = await response.json();
           setUserInfo(data);

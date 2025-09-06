@@ -11,7 +11,7 @@ const Report = () => {
     const fetchReport = async () => {
       try {
         // 임시로 userId=2 사용
-        const data = await reportService.getReport(2);
+        const data = await reportService.getReport(1);
         setReportData(data);
       } catch (error) {
         console.error('리포트 로드 실패:', error);

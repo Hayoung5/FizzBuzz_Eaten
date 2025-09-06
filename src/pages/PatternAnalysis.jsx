@@ -8,7 +8,7 @@ const PatternAnalysis = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userId = localStorage.getItem('userId') || 2
+        const userId = 1
         const response = await statisticsService.getStatistics(userId)
         setData(response)
       } catch (error) {

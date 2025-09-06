@@ -20,7 +20,7 @@ const PhotoUpload = ({ onResult, loading, setLoading }) => {
     try {
       const formData = new FormData()
       formData.append('photo', selectedFile)
-      formData.append('user_id', localStorage.getItem('userId') || '1234')
+      formData.append('user_id', 1)
       formData.append('time', new Date().toISOString())
       if (portionSize) {
         formData.append('portion_size', portionSize)
