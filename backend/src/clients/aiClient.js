@@ -129,6 +129,7 @@ class AIClient {
    */
   async analyzeBarcode({ imagePath }) {
     try {
+      console.log("바코드 분석 시도")
       const formData = new FormData();
       formData.append('image', fs.createReadStream(imagePath));
 
@@ -150,6 +151,7 @@ class AIClient {
       }
 
     } catch (error) {
+      console.log(error)
       console.error('AI Barcode Analysis Error:', error.message);
       
       if (error.response?.data?.code) {

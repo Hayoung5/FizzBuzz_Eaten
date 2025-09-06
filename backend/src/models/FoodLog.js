@@ -3,10 +3,14 @@ const { pool } = require('../config/database');
 class FoodLog {
     static async create(logData) {
         const { user_id, food_name, calories, protein, carbs, fat, fiber, sodium, sugar, is_processed, is_snack, image_path, time } = logData;
+        
+        // ISO 8601 형식을 MySQL DATETIME 형식으로 변환
+        const mysqlDateTime = new Date(time).toISOString().slice(0, 19).replace('T', ' ');
+        
         const [result] = await pool.execute(
             `INSERT INTO food_logs (user_id, food_name, calories, protein, carbs, fat, fiber, sodium, sugar, is_processed, is_snack, image_path, logged_at) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [user_id, food_name, calories, protein, carbs, fat, fiber || 0, sodium || 0, sugar || 0, is_processed || false, is_snack || false, image_path, time]
+            [user_id, food_name, calories, protein, carbs, fat, fiber || 0, sodium || 0, sugar || 0, is_processed || false, is_snack || false, image_path, mysqlDateTime]
         );
         return result.insertId;
     }

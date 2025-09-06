@@ -16,7 +16,15 @@ const path = require('path');
 // 파일 저장 설정
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // 업로드 폴더
+    const fs = require('fs');
+    const uploadDir = 'uploads/';
+    
+    // uploads 폴더가 없으면 생성
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     // 파일명: 타임스탬프 + 원본 확장자
