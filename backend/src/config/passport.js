@@ -17,20 +17,21 @@ passport.use(new KakaoStrategy({
       return done(null, user);
     }
     
-    // 신규 사용자 - 기본 정보로 자동 생성
+    // 신규 사용자 - age, gender, activity null로 생성
     const userData = {
       oauth_provider: 'kakao',
       oauth_id: profile.id,
       email: profile._json.kakao_account?.email || null,
       name: profile.displayName || profile._json.properties?.nickname || '카카오 사용자',
-      age: 25, // 기본값
-      gender: 'unknown', // 기본값
-      activity: 'moderate' // 기본값
+      age: null,
+      gender: null,
+      activity: null
     };
     
     // 사용자 생성
     const userId = await User.createOAuthUser(userData);
     const newUser = await User.findById(userId);
+    newUser.isNewUser = true; // 신규 사용자 플래그
     
     return done(null, newUser);
     

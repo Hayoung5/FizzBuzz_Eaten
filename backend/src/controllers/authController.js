@@ -13,9 +13,10 @@ const kakaoCallback = (req, res) => {
       return res.redirect('http://44.214.236.166/login?error=auth_failed');
     }
     
-    // 신규 사용자인지 확인
-    console.log('User isNewUser:', user.isNewUser);
-    if (user.isNewUser) {
+    // 신규 사용자인지 확인 (age, gender, activity가 null인 경우)
+    const isNewUser = !user.age || !user.gender || !user.activity;
+    console.log('User isNewUser:', isNewUser);
+    if (isNewUser) {
       // 신규 사용자 - 추가 정보 입력 페이지로
       const setupUrl = `http://44.214.236.166/setup?provider=kakao&oauth_id=${user.oauth_id}&email=${user.email}&name=${encodeURIComponent(user.name || '')}`;
       console.log('Redirecting new user to setup:', setupUrl);
