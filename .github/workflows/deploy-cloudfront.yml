@@ -2,7 +2,7 @@ name: Deploy to CloudFront
 
 on:
   push:
-    branches: [ main, feature/frontend ]
+    branches: [ feature/frontend ]
   workflow_dispatch:
 
 jobs:
