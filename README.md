@@ -1,4 +1,6 @@
-# Eaten : AI 기반 영양 분석 및 건강 관리 플랫폼
+#<img width="468" height="400" alt="KakaoTalk_20250906_164234483" src="https://github.com/user-attachments/assets/976f9490-6d25-44b7-8985-a774ec246842" />
+
+ Eaten : AI 기반 영양 분석 및 건강 관리 플랫폼
 
 Amazon Q Developer을 활용한 음식 사진 분석 및 개인 맞춤형 건강 관리 서비스입니다.
 
@@ -225,7 +227,7 @@ npm run build
 npm run lint
 ```
 
-## 📚 API 문서
+## API 문서
 
 ### 주요 엔드포인트
 
