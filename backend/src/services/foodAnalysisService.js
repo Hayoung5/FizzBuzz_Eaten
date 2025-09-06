@@ -108,6 +108,67 @@ const analyzeAndSaveFood = async (analysisData) => {
   }
 };
 
+/**
+ * 바코드 분석 및 음식 로그 저장
+ * @param {Object} data - {user_id, time, portion_size, imagePath}
+ * @returns {Object} 분석 결과 및 저장된 로그 정보
+ */
+const analyzeBarcodeAndSaveFood = async (data) => {
+  const { user_id, time, portion_size, imagePath } = data;
+  
+  try {
+    // AI 서버에 바코드 분석 요청
+    const aiResponse = await aiClient.analyzeBarcode({
+      imagePath,
+      time,
+      portion_size
+    });
+    
+    // AI 응답을 프론트엔드 API 스펙에 맞게 변환
+    const foods = aiResponse.foods || [];
+    const savedLogs = [];
+    
+    // 각 음식을 DB에 저장
+    for (const food of foods) {
+      const logData = {
+        user_id: parseInt(user_id),
+        food_name: food.name,
+        calories: food.nutrition.calories,
+        protein: food.nutrition.protein,
+        carbs: food.nutrition.carbohydrates,
+        fat: food.nutrition.fat,
+        fiber: food.nutrition.fiber,
+        sodium: food.nutrition.sodium,
+        sugar: food.nutrition.sugar,
+        is_processed: food.is_processed || false,
+        is_snack: food.is_snack || false,
+        logged_at: time,
+        image_path: imagePath
+      };
+      
+      const logId = await FoodLog.create(logData);
+      savedLogs.push({ ...logData, id: logId });
+    }
+    
+    // 프론트엔드 API 스펙에 맞는 응답 형태로 변환
+    return {
+      foods: foods.map(food => ({
+        name: food.name,
+        nutrition: food.nutrition,
+        is_processed: food.is_processed || false,
+        is_snack: food.is_snack || false
+      })),
+      total_nutrition: aiResponse.total_nutrition,
+      saved_logs: savedLogs
+    };
+    
+  } catch (error) {
+    console.error('Barcode analysis service error:', error);
+    throw error;
+  }
+};
+
 module.exports = {
-  analyzeAndSaveFood
+  analyzeAndSaveFood,
+  analyzeBarcodeAndSaveFood
 };

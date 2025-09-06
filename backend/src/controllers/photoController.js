@@ -67,4 +67,51 @@ const analyzePhoto = async (req, res) => {
   }
 };
 
-module.exports = { analyzePhoto };
+/**
+ * 바코드 사진 분석 API
+ * POST /api/barcode_analy
+ * @param {Object} req.body - {user_id, time, portion_size}
+ * @param {File} req.file - 업로드된 바코드 이미지 파일
+ * @returns {Object} 바코드 분석 결과 또는 에러 응답
+ */
+const analyzeBarcode = async (req, res) => {
+  const { user_id, time, portion_size } = req.body;
+  
+  // 필수 필드 검증
+  if (!user_id || !time || !req.file) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  try {
+    // AI 서버를 통한 바코드 분석 및 저장
+    const analysisResult = await foodAnalysisService.analyzeBarcodeAndSaveFood({
+      user_id,
+      time,
+      portion_size,
+      imagePath: req.file.path
+    });
+    
+    // 성공 응답 (음식 사진 분석과 동일한 형태)
+    res.json(analysisResult);
+    
+  } catch (error) {
+    // AI 서버 에러를 프론트엔드 API 스펙에 맞게 변환
+    console.error('Barcode analysis error:', error);
+    
+    if (error.code && error.status) {
+      // AI 서버에서 정의된 에러 코드 처리
+      return res.status(error.status).json({
+        error_code: error.code,
+        message: error.message
+      });
+    }
+    
+    // 예상치 못한 에러
+    res.status(500).json({
+      error_code: 'INTERNAL_ERROR',
+      message: '바코드 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    });
+  }
+};
+
+module.exports = { analyzePhoto, analyzeBarcode };

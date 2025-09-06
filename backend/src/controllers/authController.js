@@ -91,9 +91,36 @@ const getMe = (req, res) => {
   });
 };
 
+/**
+ * 카카오 사용자 존재 여부 확인
+ */
+const checkUserExists = async (req, res) => {
+  try {
+    const { oauth_id } = req.body;
+    
+    if (!oauth_id) {
+      return res.status(400).json({ error: 'oauth_id is required' });
+    }
+    
+    // 카카오 사용자 존재 여부 확인
+    const User = require('../models/User');
+    const user = await User.findByOAuth('kakao', oauth_id);
+    
+    res.json({
+      exists: !!user,
+      user_id: user ? user.id : null
+    });
+    
+  } catch (error) {
+    console.error('Check user exists error:', error);
+    res.status(500).json({ error: 'Failed to check user existence' });
+  }
+};
+
 module.exports = {
   kakaoCallback,
   completeSignup,
+  checkUserExists,
   logout,
   getMe
 };
