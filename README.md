@@ -1,4 +1,6 @@
-<img width="468" height="400" alt="KakaoTalk_20250906_164234483" src="https://github.com/user-attachments/assets/976f9490-6d25-44b7-8985-a774ec246842" />
+<div align="center">
+  <img width="468" height="400" alt="KakaoTalk_20250906_164234483" src="https://github.com/user-attachments/assets/976f9490-6d25-44b7-8985-a774ec246842" />
+</div>
 
 # Eaten : AI 기반 영양 분석 및 건강 관리 플랫폼
 
