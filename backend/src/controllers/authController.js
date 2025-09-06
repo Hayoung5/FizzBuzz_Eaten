@@ -6,32 +6,46 @@ const { generateToken } = require('../middleware/auth');
 const kakaoCallback = (req, res) => {
   try {
     const user = req.user;
-    console.log('Kakao callback - user:', user);
     
     if (!user) {
-      console.log('No user found, redirecting to login');
-      return res.redirect('http://44.214.236.166/login?error=auth_failed');
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Authentication failed' 
+      });
     }
     
-    // 신규 사용자인지 확인 (age, gender, activity가 null인 경우)
     const isNewUser = !user.age || !user.gender || !user.activity;
-    console.log('User isNewUser:', isNewUser);
+    
     if (isNewUser) {
-      // 신규 사용자 - 추가 정보 입력 페이지로
-      const setupUrl = `http://44.214.236.166/setup?provider=kakao&oauth_id=${user.oauth_id}&email=${user.email}&name=${encodeURIComponent(user.name || '')}`;
-      console.log('Redirecting new user to setup:', setupUrl);
-      res.redirect(setupUrl);
+      return res.json({
+        success: true,
+        isNewUser: true,
+        user: {
+          oauth_id: user.oauth_id,
+          email: user.email,
+          name: user.name
+        }
+      });
     } else {
-      // 기존 사용자 - JWT 토큰 생성하여 대시보드로
       const token = generateToken(user.id);
-      const dashboardUrl = `http://44.214.236.166/dashboard?token=${token}&user_id=${user.id}`;
-      console.log('Redirecting existing user to dashboard:', dashboardUrl);
-      res.redirect(dashboardUrl);
+      return res.json({
+        success: true,
+        isNewUser: false,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email
+        }
+      });
     }
     
   } catch (error) {
     console.error('Kakao callback error:', error);
-    res.redirect('http://44.214.236.166/login?error=server_error');
+    res.status(500).json({ 
+      success: false, 
+      error: 'Server error' 
+    });
   }
 };
 
