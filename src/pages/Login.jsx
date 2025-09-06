@@ -2,8 +2,13 @@ import '../styles/base.css'
 
 // Force rebuild - v1.0.1
 const Login = () => {
-  const handleKakaoLogin = () => {
-    window.location.href = '/api/auth/kakao'
+  const handleKakaoLogin = async () => {
+    try {
+      // 카카오 로그인 페이지로 이동
+      window.location.href = '/api/auth/kakao'
+    } catch (error) {
+      console.error('Login error:', error)
+    }
   }
 
   return (
@@ -38,7 +43,7 @@ const Login = () => {
             }}
           >
             <span style={{ fontSize: '18px' }}>💬</span>
-            카카오로 시작하기
+            카카오 로그인
           </button>
         </div>
 

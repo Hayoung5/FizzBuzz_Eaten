@@ -47,11 +47,19 @@ const UserSetup = () => {
           activity: formData.activity
         }
         
-        const response = await userService.registerUser(userData)
+        const response = await fetch('/api/auth/complete-signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData)
+        })
         
-        if (response.success) {
-          localStorage.setItem('token', response.token)
-          localStorage.setItem('userId', response.user_id)
+        const result = await response.json()
+        
+        if (result.success) {
+          localStorage.setItem('token', result.token)
+          localStorage.setItem('userId', result.user_id)
           navigate('/dashboard')
         }
       } catch (error) {
