@@ -25,10 +25,9 @@ class AIClient {
     
     try {
       const formData = new FormData();
-      formData.append('image', fs.createReadStream(imagePath));
+      formData.append('photo', fs.createReadStream(imagePath));
       formData.append('time', time);
       formData.append('portion_size', portion_size);
-
       const response = await axios.post(
         `${this.baseURL}/api/v1/analyze-food`,
         formData,
