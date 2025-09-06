@@ -1,0 +1,62 @@
+name: Deploy Frontend to EC2
+
+on:
+  push:
+    branches: [ feature/frontend ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Build frontend
+      run: npm run build
+    
+    - name: Deploy frontend with rsync
+      uses: burnett01/rsync-deployments@6.0.0
+      with:
+        switches: -avzr --delete
+        path: dist/
+        remote_path: /var/www/html/
+        remote_host: 44.214.236.166
+        remote_user: ec2-user
+        remote_key: ${{ secrets.EC2_SSH_KEY }}
+    
+    - name: Configure nginx
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          echo "Configuring nginx..."
+          sudo tee /etc/nginx/nginx.conf > /dev/null << 'NGINX_EOF'
+          user nginx;
+          events { worker_connections 1024; }
+          http {
+            include /etc/nginx/mime.types;
+            server {
+              listen 80;
+              root /var/www/html;
+              location /api/ {
+                proxy_pass http://localhost:3000/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+              }
+            }
+          }
+          NGINX_EOF
+          
+          sudo systemctl reload nginx
+          echo "Frontend deployment completed"
