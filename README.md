@@ -38,7 +38,7 @@ DB_PASSWORD=your_password
 DB_NAME=fizzbuzz_eaten
 
 # AI Server Configuration
-AI_SERVER_URL=http://localhost:5001
+AI_SERVER_URL=http://localhost:5000
 
 # Server Configuration
 PORT=3000

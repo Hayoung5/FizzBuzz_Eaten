@@ -10,7 +10,7 @@ const fs = require('fs');
 
 class AIClient {
   constructor() {
-    this.baseURL = process.env.AI_SERVER_URL || 'http://localhost:5001';
+    this.baseURL = process.env.AI_SERVER_URL || 'http://localhost:5000';
     this.timeout = 30000; // 30초
   }
 
