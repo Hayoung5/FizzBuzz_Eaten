@@ -218,6 +218,85 @@ paths:
         '500':
           description: 서버 오류
 
+  /api/barcode_analy:
+    post:
+      summary: 바코드 사진 분석
+      description: 바코드 이미지를 업로드하여 제품 정보 및 영양성분 분석
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - photo
+                - user_id
+                - time
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  description: 바코드 이미지 파일
+                user_id:
+                  type: integer
+                  description: 사용자 ID
+                  example: 1234
+                time:
+                  type: string
+                  format: date-time
+                  description: 섭취 시간 (ISO 8601)
+                  example: "2025-09-05T15:20:00Z"
+                portion_size:
+                  type: string
+                  description: 섭취량 정보
+                  example: "1개"
+      responses:
+        '200':
+          description: 바코드 분석 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  food_name:
+                    type: string
+                    example: "오리온 초코파이"
+                  portion_size:
+                    type: string
+                    example: "1개 (28g)"
+                  nutrition:
+                    type: object
+                    properties:
+                      calories:
+                        type: number
+                        example: 168
+                      carbohydrates:
+                        type: number
+                        example: 24.5
+                      protein:
+                        type: number
+                        example: 2.1
+                      fat:
+                        type: number
+                        example: 7.2
+                      sugar:
+                        type: number
+                        example: 12.3
+                      sodium:
+                        type: number
+                        example: 95
+                      fiber:
+                        type: number
+                        example: 0.8
+        '400':
+          description: 필수 필드 누락
+        '422':
+          description: 바코드 인식 실패
+        '404':
+          description: 제품 정보 없음
+        '500':
+          description: 서버 오류
+
   /api/statistics:
     get:
       summary: 7일간 영양 통계 조회
@@ -420,6 +499,43 @@ paths:
       responses:
         '302':
           description: 카카오 로그인 페이지로 리다이렉트
+
+  /api/auth/check-user:
+    post:
+      summary: 카카오 사용자 존재 여부 확인
+      description: 카카오 oauth_id로 기존 사용자인지 확인
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oauth_id
+              properties:
+                oauth_id:
+                  type: string
+                  description: 카카오 OAuth ID
+                  example: "4431218711"
+      responses:
+        '200':
+          description: 사용자 존재 여부 확인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists:
+                    type: boolean
+                    description: 사용자 존재 여부
+                    example: true
+                  user_id:
+                    type: integer
+                    nullable: true
+                    description: 사용자 ID (존재할 경우)
+                    example: 1
+        '400':
+          description: oauth_id 필수
 
   /api/auth/complete-signup:
     post:

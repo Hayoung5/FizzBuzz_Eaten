@@ -121,7 +121,67 @@
 
 ---
 
-### 3. 사용자 통계 조회
+### 4. 바코드 사진 분석
+
+**POST** `/api/barcode_analy`
+
+- **요청 (Request)**
+    - Content-Type: `multipart/form-data`
+    - Body:
+        - `user_id`: integer
+        - `time`: string (ISO 8601 timestamp, 예: `"2025-09-04T15:20:00Z"`)
+        - `photo`: file (바코드 이미지 파일)
+        - `portion_size`: string (optional, null 가능)
+    
+    예시 (JSON 표현):
+    
+    ```json
+    {
+      "user_id": 1234,
+      "time": "2025-09-04T15:20:00Z",
+      "portion_size": "1개"
+    }
+    ```
+    
+- **응답 (Response)**
+    
+    ```json
+    {
+      "food_name": "오리온 초코파이",
+      "portion_size": "1개 (28g)",
+      "nutrition": {
+        "calories": 168,
+        "carbohydrates": 24.5,
+        "protein": 2.1,
+        "fat": 7.2,
+        "sugar": 12.3,
+        "sodium": 95,
+        "fiber": 0.8
+      }
+    }
+    ```
+    
+- **실패 1: 바코드 인식 실패 (422 Unprocessable Entity)**
+    
+    ```json
+    {
+      "error_code": "BARCODE_NOT_DETECTED",
+      "message": "바코드가 감지되지 않았습니다. 바코드가 명확히 보이는 사진을 다시 업로드해주세요."
+    }
+    ```
+    
+- **실패 2: 제품 정보 조회 실패 (404 Not Found)**
+    
+    ```json
+    {
+      "error_code": "PRODUCT_INFO_NOT_FOUND",
+      "message": "바코드는 인식되었지만 해당 제품의 정보를 찾을 수 없습니다."
+    }
+    ```
+
+---
+
+### 5. 사용자 통계 조회
 
 **GET** `/api/statistics`
 
@@ -230,7 +290,37 @@
     카카오 로그인 페이지로 리다이렉트
     
 
-#### 6-2. 신규 사용자 추가 정보 등록
+#### 6-2. 카카오 사용자 존재 여부 확인
+
+**POST** `/api/auth/check-user`
+
+- **요청 (Request)**
+    
+    ```json
+    {
+      "oauth_id": "4431218711"
+    }
+    ```
+    
+- **응답 (Response)**
+    
+    ```json
+    {
+      "exists": true,
+      "user_id": 1
+    }
+    ```
+    
+    또는
+    
+    ```json
+    {
+      "exists": false,
+      "user_id": null
+    }
+    ```
+
+#### 6-3. 신규 사용자 추가 정보 등록
 
 **POST** `/api/auth/complete-signup`
 
@@ -258,7 +348,7 @@
     }
     ```
 
-#### 6-3. 내 정보 조회
+#### 6-4. 내 정보 조회
 
 **GET** `/api/auth/me`
 
@@ -282,7 +372,7 @@
     }
     ```
 
-#### 6-4. 로그아웃
+#### 6-5. 로그아웃
 
 **POST** `/api/auth/logout`
 

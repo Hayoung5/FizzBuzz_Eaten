@@ -122,6 +122,54 @@ class AIClient {
       throw new Error('식사 추천 생성 중 서버 오류가 발생했습니다.');
     }
   }
+  /**
+   * 바코드 사진 분석 요청
+   * @param {Object} params - {imagePath, time, portion_size}
+   * @returns {Promise<Object>} AI 분석 결과
+   */
+  async analyzeBarcode({ imagePath, time, portion_size }) {
+    try {
+      const formData = new FormData();
+      formData.append('image', fs.createReadStream(imagePath));
+      formData.append('time', time);
+      formData.append('portion_size', portion_size);
+
+      const response = await axios.post(
+        `${this.baseURL}/api/v1/analyze-barcode`,
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(),
+          },
+          timeout: this.timeout
+        }
+      );
+
+      if (response.data.status === 'success') {
+        return response.data;
+      } else {
+        throw new Error(response.data.message || 'AI 바코드 분석 실패');
+      }
+
+    } catch (error) {
+      console.error('AI Barcode Analysis Error:', error.message);
+      
+      if (error.response?.data?.code) {
+        const errorCode = error.response.data.code;
+        switch (errorCode) {
+          case 'BARCODE_NOT_DETECTED':
+            throw new Error('바코드가 감지되지 않았습니다. 바코드가 명확히 보이는 사진을 다시 업로드해주세요.');
+          case 'PRODUCT_INFO_NOT_FOUND':
+            throw new Error('바코드는 인식되었지만 해당 제품의 정보를 찾을 수 없습니다.');
+          default:
+            throw new Error('AI 바코드 분석 중 서버 오류가 발생했습니다.');
+        }
+      }
+      
+      throw new Error('AI 서버 연결 오류가 발생했습니다.');
+    }
+  }
+
 }
 
 module.exports = new AIClient();

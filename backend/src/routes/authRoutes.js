@@ -1,6 +1,6 @@
 const express = require('express');
 const passport = require('../config/passport');
-const { kakaoCallback, completeSignup, logout, getMe } = require('../controllers/authController');
+const { kakaoCallback, completeSignup, checkUserExists, logout, getMe } = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -13,6 +13,9 @@ router.get('/kakao/callback',
   passport.authenticate('kakao', { failureRedirect: '/login' }),
   kakaoCallback
 );
+
+// 카카오 사용자 존재 여부 확인
+router.post('/check-user', checkUserExists);
 
 // 신규 사용자 추가 정보 등록
 router.post('/complete-signup', completeSignup);
