@@ -48,7 +48,7 @@ const completeSignup = async (req, res) => {
   try {
     const { oauth_provider, oauth_id, email, name, age, gender, activity } = req.body;
     
-    if (!oauth_provider || !oauth_id || !age || !gender || !activity) {
+    if (!age || !gender || !activity) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
