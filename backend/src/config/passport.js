@@ -6,7 +6,7 @@ console.log('KAKAO_CLIENT_ID:', process.env.KAKAO_CLIENT_ID); // 디버깅용
 
 passport.use(new KakaoStrategy({
   clientID: process.env.KAKAO_CLIENT_ID,
-  callbackURL: '/api/auth/kakao/callback'
+  callbackURL: 'http://44.214.236.166:3000/api/auth/kakao/callback'
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     // 기존 사용자 확인
