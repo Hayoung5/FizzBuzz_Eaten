@@ -32,31 +32,22 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           # Create directory if it doesn't exist
-          mkdir -p /home/ec2-user/nutrition-app-frontend/dist/
+          sudo mkdir -p /var/www/html
           # Fix ownership and permissions
-          sudo chown -R ec2-user:ec2-user /home/ec2-user/nutrition-app-frontend/
-          chmod -R 755 /home/ec2-user/nutrition-app-frontend/
+          sudo chown -R nginx:nginx /var/www/html
+          sudo chmod -R 755 /var/www/html
     
     - name: Deploy files with rsync
       uses: burnett01/rsync-deployments@6.0.0
       with:
-        switches: -avzr --delete --exclude='node_modules' --exclude='*.log'
+        switches: -avzr --delete --exclude='node_modules' --exclude='*.log' --rsync-path='sudo rsync'
         path: dist/
-        remote_path: /home/ec2-user/nutrition-app-frontend/dist/
+        remote_path: /var/www/html/
         remote_host: 44.214.236.166
         remote_user: ec2-user
         remote_key: ${{ secrets.EC2_SSH_KEY }}
     
-    - name: Deploy nginx config
-      uses: burnett01/rsync-deployments@6.0.0
-      with:
-        switches: -avzr
-        path: nginx.conf
-        remote_path: /home/ec2-user/
-        remote_host: 44.214.236.166
-        remote_user: ec2-user
-        remote_key: ${{ secrets.EC2_SSH_KEY }}
-    
+
     - name: Setup nginx and restart
       uses: appleboy/ssh-action@v1.0.0
       with:
@@ -65,14 +56,14 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           # Install nginx if not installed
-          sudo yum install -y nginx
+          sudo amazon-linux-extras install -y nginx1
           
-          # Copy nginx config
-          sudo cp nginx.conf /etc/nginx/conf.d/nutrition-app-frontend.conf
+          # Create simple nginx config
+          echo 'events { worker_connections 1024; } http { server { listen 80 default_server; root /var/www/html; index index.html; location / { try_files \$uri \$uri/ /index.html; } location /api/ { proxy_pass http://localhost:3000; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; } } }' | sudo tee /etc/nginx/nginx.conf
           
           # Test and restart nginx
           sudo nginx -t && sudo systemctl enable nginx && sudo systemctl restart nginx
           
-          # Open port 80
-          sudo firewall-cmd --permanent --add-port=80/tcp || echo "firewall-cmd not available"
-          sudo firewall-cmd --reload || echo "firewall-cmd not available"
+          # Fix permissions
+          sudo chown -R nginx:nginx /var/www/html
+          sudo chmod -R 755 /var/www/html
