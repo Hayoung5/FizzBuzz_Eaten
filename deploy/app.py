@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 import tempfile
 import time
 from botocore.exceptions import ClientError
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -19,6 +20,99 @@ ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_food_nutrition(food_name):
+    print(f"Fetching nutrition for: {food_name}")
+    # SSL 경고 무시
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    
+    try:
+        base_url = "https://apis.data.go.kr/1471000/FoodNtrCpntDbInfo02/getFoodNtrCpntDbInq02"
+        params = {
+            "serviceKey": "0c3a58a00c706c24b262f34ac5a1367467fd6b075a8e2466c8273a064084edb1",
+            "FOOD_NM_KR": food_name,
+            "numOfRows": 1,
+            "type": "json"
+        }
+
+        # Postman과 동일한 설정
+        import ssl
+        from requests.adapters import HTTPAdapter
+        from requests.packages.urllib3.util.retry import Retry
+        
+        # SSL 컨텍스트 설정 (Postman 스타일)
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        ssl_context.set_ciphers('DEFAULT@SECLEVEL=1')  # 암호화 레벨 낮춤
+        
+        class PostmanStyleAdapter(HTTPAdapter):
+            def init_poolmanager(self, *args, **kwargs):
+                kwargs['ssl_context'] = ssl_context
+                kwargs['cert_reqs'] = 'CERT_NONE'
+                return super().init_poolmanager(*args, **kwargs)
+        
+        # 재시도 설정
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504]
+        )
+        
+        session = requests.Session()
+        adapter = PostmanStyleAdapter(max_retries=retry_strategy)
+        session.mount('https://', adapter)
+        session.mount('http://', adapter)
+        session.verify = False
+        
+        # Postman 스타일 헤더
+        headers = {
+            'User-Agent': 'PostmanRuntime/7.32.3',
+            'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive'
+        }
+        
+        response = session.get(base_url, params=params, headers=headers, timeout=30)
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        if data['header']['resultCode'] == '00' and 'items' in data['body'] and len(data['body']['items']) > 0:
+            item = data['body']['items'][0]
+            
+            return {
+                "calories": float(item.get('AMT_NUM1', 0) or 0),
+                "carbohydrates": float(item.get('AMT_NUM6', 0) or 0),
+                "protein": float(item.get('AMT_NUM3', 0) or 0), 
+                "fat": float(item.get('AMT_NUM4', 0) or 0),
+                "sugar": float(item.get('AMT_NUM7', 0) or 0),
+                "sodium": float(item.get('AMT_NUM13', 0) or 0),
+                "fiber": float(item.get('AMT_NUM8', 0) or 0)
+            }
+        else:
+            return {
+            "calories": 0,
+            "carbohydrates": 0,
+            "protein": 0,
+            "fat": 0,
+            "sugar": 0,
+            "sodium": 0,
+            "fiber": 0
+        }
+
+    except requests.RequestException as e:
+        print(e)
+        return {
+            "calories": 0,
+            "carbohydrates": 0,
+            "protein": 0,
+            "fat": 0,
+            "sugar": 0,
+            "sodium": 0,
+            "fiber": 0
+        }
 
 def get_dummy_nutrition(food_name):
     """음식명에 따른 더미 영양 정보 반환"""
@@ -171,11 +265,13 @@ def analyze_food():
         end_idx = result.rfind(']') + 1
         if start_idx != -1 and end_idx != 0:
             json_str = result[start_idx:end_idx]
+            json_str = json_str.replace("'", '"')
+    
             parsed_result = json.loads(json_str)
             
             # 영양 정보 추가
             for food_item in parsed_result:
-                food_item['nutrition'] = get_dummy_nutrition(food_item['food_name'])
+                food_item['nutrition'] = get_food_nutrition(food_item['food_name'])
             
             return jsonify({
                 "status": "success",
@@ -281,7 +377,6 @@ def generate_health_report():
         }}
         """
         
-        print(prompt)
         # ThrottlingException 처리를 위한 재시도 로직
         max_retries = 3
         for attempt in range(max_retries):
@@ -302,6 +397,8 @@ def generate_health_report():
             end_idx = result.rfind('}') + 1
             if start_idx != -1 and end_idx != 0:
                 json_str = result[start_idx:end_idx]
+                json_str = json_str.replace("'", '"')
+
                 parsed_result = json.loads(json_str)
                 
                 return jsonify({
@@ -389,7 +486,7 @@ def recommend_meal():
         - 당류: {data['reco_sugar']}g
         - 나트륨: {data['reco_sodium']}mg
 
-        **3일간 식사 기록:**
+        **식사 기록:**
         일차 | 시간 | 칼로리 | 탄수화물 | 단백질 | 지방 | 당류 | 나트륨
         {nutrition_table}
 
@@ -402,6 +499,7 @@ def recommend_meal():
         2. 가공식품 섭취 빈도 고려
         3. 균형잡힌 영양소 구성을 위한 구체적인 음식 추천
         4. 실천 가능한 식사 메뉴 제안
+        5. 대중적으로 인기 있는 메뉴로 추천
 
         다음 JSON 형식으로 응답해주세요:
         {{
@@ -430,6 +528,8 @@ def recommend_meal():
             end_idx = result.rfind('}') + 1
             if start_idx != -1 and end_idx != 0:
                 json_str = result[start_idx:end_idx]
+                json_str = json_str.replace("'", '"')
+
                 parsed_result = json.loads(json_str)
                 
                 return jsonify({
@@ -464,6 +564,128 @@ def recommend_meal():
             "message": "식사 추천 생성 중 서버 오류가 발생했습니다.",
             "code": "RECOMMENDATION_ERROR"
         }), 500
+
+@app.route('/api/v1/analyze-barcode', methods=['POST'])
+def analyze_barcode():
+    tmp_file_path = None
+    try:
+        # 파일 검증
+        if 'image' not in request.files:
+            return jsonify({
+                "status": "error", 
+                "message": "Invalid image format or missing required fields",
+                "code": "INVALID_REQUEST"
+            }), 400
+
+        file = request.files['image']
+        
+        if not file or not allowed_file(file.filename):
+            return jsonify({
+                "status": "error",
+                "message": "Invalid image format or missing required fields", 
+                "code": "INVALID_REQUEST"
+            }), 400
+
+        # 임시 파일로 저장
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
+        tmp_file_path = tmp_file.name
+        file.save(tmp_file_path)
+        tmp_file.close()
+
+        # 바코드 분석 프롬프트
+        prompt = """
+        이미지를 분석하여 바코드가 있는지 확인하고, 바코드 번호를 추출해주세요.
+
+        다음 JSON 형식으로만 응답해주세요:
+        {
+            "has_barcode": true 또는 false,
+            "barcode_number": "바코드 번호 (숫자만, 바코드가 없으면 null)",
+            "barcode_type": "바코드 타입 (EAN-13, UPC-A 등, 없으면 null)"
+        }
+
+        주의사항:
+        - 바코드가 명확하게 보이지 않으면 has_barcode를 false로 설정
+        - 바코드 번호는 숫자만 추출 (공백, 하이픈 제거)
+        - JSON 형식을 정확히 지켜주세요
+        """
+        
+        barcode_result = bedrock_service.analyze_image(tmp_file_path, prompt)
+
+        # JSON 파싱 시도
+        start_idx = barcode_result.find('{')
+        end_idx = barcode_result.rfind('}') + 1
+        if start_idx != -1 and end_idx != 0:
+            json_str = barcode_result[start_idx:end_idx]
+            json_str = json_str.replace("'", '"')
+
+            parsed_result = json.loads(json_str)
+            
+            # has_barcode가 true인 경우에만 바코드 번호 반환
+            if parsed_result.get('has_barcode'):
+                barcode = parsed_result.get('barcode_number')
+        
+            # Open Food Facts API 호출
+            api_url = f"https://world.openfoodfacts.org/api/v0/product/{barcode.strip()}"
+            response = requests.get(api_url)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if data['status'] == 1:
+                    product = data['product']
+                    
+                    # 필요한 정보 추출
+                    result = [
+                        {
+                        "food_name": product.get('product_name', ''),
+                        "portion_size": product.get('serving_size', '100g'),
+                        "nutrition": {
+                            "calories": float(product.get('nutriments', {}).get('energy-kcal_100g', 0)),
+                            "carbohydrates": float(product.get('nutriments', {}).get('carbohydrates_100g', 0)),
+                            "protein": float(product.get('nutriments', {}).get('proteins_100g', 0)),
+                            "fat": float(product.get('nutriments', {}).get('fat_100g', 0)),
+                            "sugar": float(product.get('nutriments', {}).get('sugars_100g', 0)),
+                            "sodium": float(product.get('nutriments', {}).get('sodium_100g', 0)),
+                            "fiber": float(product.get('nutriments', {}).get('fiber_100g', 0))
+                        },
+                        "is_snack": "true"
+                        }
+                    ]
+                    
+                    return jsonify({
+                        "status": "success",
+                        "data": result
+                    })
+                else:
+                    return jsonify({
+                        "status": "error",
+                        "message": "제품 정보를 찾을 수 없습니다.",
+                        "code": "PRODUCT_NOT_FOUND"
+                    })
+            else:
+               return jsonify({
+                        "status": "error",
+                        "message": "API 요청 실패 또는 제품을 찾을 수 없습니다.",
+                        "code": "API_ERROR"
+                    })       
+
+    except Exception as e:
+        print(f"Error in analyze_barcode: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "status": "error",
+            "message": "바코드 인식 중 오류가 발생했습니다.",
+            "code": "ANALYSIS_SERVER_ERROR"
+        }), 500
+
+    finally:
+        # 임시 파일 안전하게 삭제
+        if tmp_file_path and os.path.exists(tmp_file_path):
+            try:
+                os.unlink(tmp_file_path)
+            except PermissionError:
+                pass
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
