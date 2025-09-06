@@ -560,13 +560,13 @@ def analyze_barcode():
         - JSON 형식을 정확히 지켜주세요
         """
         
-        result = bedrock_service.analyze_image(tmp_file_path, prompt)
+        barcode_result = bedrock_service.analyze_image(tmp_file_path, prompt)
 
         # JSON 파싱 시도
-        start_idx = result.find('{')
-        end_idx = result.rfind('}') + 1
+        start_idx = barcode_result.find('{')
+        end_idx = barcode_result.rfind('}') + 1
         if start_idx != -1 and end_idx != 0:
-            json_str = result[start_idx:end_idx]
+            json_str = barcode_result[start_idx:end_idx]
             parsed_result = json.loads(json_str)
             
             # has_barcode가 true인 경우에만 바코드 번호 반환
@@ -584,9 +584,10 @@ def analyze_barcode():
                     product = data['product']
                     
                     # 필요한 정보 추출
-                    result = {
-                        "name": product.get('product_name', ''),
-                        "brand": product.get('brands', ''),
+                    result = [
+                        {
+                        "food_name": product.get('product_name', ''),
+                        "portion_size": product.get('serving_size', '100g'),
                         "nutrition": {
                             "calories": float(product.get('nutriments', {}).get('energy-kcal_100g', 0)),
                             "carbohydrates": float(product.get('nutriments', {}).get('carbohydrates_100g', 0)),
@@ -596,9 +597,9 @@ def analyze_barcode():
                             "sodium": float(product.get('nutriments', {}).get('sodium_100g', 0)),
                             "fiber": float(product.get('nutriments', {}).get('fiber_100g', 0))
                         },
-                        "ingredients": product.get('ingredients_text', ''),
-                        "serving_size": product.get('serving_size', '100g')
-                    }
+                        "is_snack": "true"
+                        }
+                    ]
                     
                     return jsonify({
                         "status": "success",
