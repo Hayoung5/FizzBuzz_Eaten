@@ -124,15 +124,13 @@ class AIClient {
   }
   /**
    * 바코드 사진 분석 요청
-   * @param {Object} params - {imagePath, time, portion_size}
+   * @param {Object} params - {imagePath}
    * @returns {Promise<Object>} AI 분석 결과
    */
-  async analyzeBarcode({ imagePath, time, portion_size }) {
+  async analyzeBarcode({ imagePath }) {
     try {
       const formData = new FormData();
       formData.append('image', fs.createReadStream(imagePath));
-      formData.append('time', time);
-      formData.append('portion_size', portion_size);
 
       const response = await axios.post(
         `${this.baseURL}/api/v1/analyze-barcode`,

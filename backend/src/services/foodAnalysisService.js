@@ -117,11 +117,9 @@ const analyzeBarcodeAndSaveFood = async (data) => {
   const { user_id, time, portion_size, imagePath } = data;
   
   try {
-    // AI 서버에 바코드 분석 요청
+    // AI 서버에 바코드 분석 요청 (이미지만 전송)
     const aiResponse = await aiClient.analyzeBarcode({
-      imagePath,
-      time,
-      portion_size
+      imagePath
     });
     
     // AI 응답을 프론트엔드 API 스펙에 맞게 변환

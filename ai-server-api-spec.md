@@ -121,7 +121,91 @@ curl -X POST "https://ai-server.example.com/api/v1/analyze-food" \
 }
 ```
 
-## 2. 건강리포트 생성 API
+## 2. 바코드 분석 API
+
+### 엔드포인트
+```
+POST /api/v1/analyze-barcode
+```
+
+### 요청 (Request)
+
+**Content-Type**: `multipart/form-data`
+
+**Parameters**:
+- `image` (file, required): 바코드 이미지 파일 (jpg, png, webp)
+
+**Example Request**:
+```bash
+curl -X POST "https://ai-server.example.com/api/v1/analyze-barcode" \
+  -H "Content-Type: multipart/form-data" \
+  -F "image=@barcode_image.jpg"
+```
+
+### 응답 (Response)
+
+**Success Response (200 OK)**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "food_name": "오리온 초코파이",
+      "portion_size": "1개 (28g)",
+      "is_processed": true,
+      "is_snack": true,
+      "nutrition": {
+        "calories": 168,
+        "carbohydrates": 24.5,
+        "protein": 2.1,
+        "fat": 7.2,
+        "sugar": 12.3,
+        "sodium": 95,
+        "fiber": 0.8
+      }
+    }
+  ]
+}
+```
+
+**Data Array**: 인식된 제품 정보
+- `food_name` (string): 제품명
+- `portion_size` (string): 제공량 정보 (1개, 100g 등)
+- `is_processed` (boolean): 가공식품 여부 (대부분 true)
+- `is_snack` (boolean): 간식 여부
+- `nutrition` (object): 영양정보 객체
+
+**Error Response (422 Unprocessable Entity) - 바코드 미발견**:
+```json
+{
+  "status": "error",
+  "message": "바코드가 감지되지 않았습니다. 바코드가 명확히 보이는 사진을 다시 업로드해주세요.",
+  "code": "BARCODE_NOT_DETECTED"
+}
+```
+
+**Error Response (404 Not Found) - 제품 정보 미발견**:
+```json
+{
+  "status": "error",
+  "message": "바코드는 인식되었지만 해당 제품의 정보를 찾을 수 없습니다.",
+  "code": "PRODUCT_INFO_NOT_FOUND",
+  "data": {
+    "barcode": "8801117123456"
+  }
+}
+```
+
+**Error Response (500 Internal Server Error)**:
+```json
+{
+  "status": "error",
+  "message": "AI 바코드 분석 중 서버 오류가 발생했습니다.",
+  "code": "BARCODE_ANALYSIS_ERROR"
+}
+```
+
+## 3. 건강리포트 생성 API
 
 ### 엔드포인트
 ```
@@ -201,7 +285,7 @@ curl -X POST "https://ai-server.example.com/api/v1/generate-health-report" \
 - `reco_*` (number): 1일 권장량 (칼로리, 탄수화물, 단백질, 지방, 당, 나트륨)
 - `*_log` (array): 7일간 각 영양소 섭취량 기록
 
-## 3. 식사 추천 API
+## 4. 식사 추천 API
 
 ### 엔드포인트
 ```
