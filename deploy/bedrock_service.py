@@ -82,8 +82,11 @@ class BedrockService:
                 }
             ]
         }
-        
-        response = self._invoke_with_fallback(body)
+        response = self.bedrock.invoke_model(
+            modelId=self.model_id,
+            body=json.dumps(body)
+        )
+
         result = json.loads(response['body'].read())
         return result['content'][0]['text']
     
@@ -124,6 +127,6 @@ class BedrockService:
             modelId=self.model_id,
             body=json.dumps(body)
         )
-        
+
         result = json.loads(response['body'].read())
         return result['content'][0]['text']

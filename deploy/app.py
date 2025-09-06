@@ -22,6 +22,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_food_nutrition(food_name):
+    print(f"Fetching nutrition for: {food_name}")
     # SSL 경고 무시
     import urllib3
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -78,17 +79,17 @@ def get_food_nutrition(food_name):
         
         data = response.json()
         
-        if data['header']['resultCode'] == '00' and len(data['body']['items']) > 0:
+        if data['header']['resultCode'] == '00' and 'items' in data['body'] and len(data['body']['items']) > 0:
             item = data['body']['items'][0]
             
             return {
-                "calories": float(item['AMT_NUM1']),
-                "carbohydrates": float(item['AMT_NUM6']),
-                "protein": float(item['AMT_NUM3']), 
-                "fat": float(item['AMT_NUM4']),
-                "sugar": float(item['AMT_NUM7']),
-                "sodium": float(item['AMT_NUM13']),
-                "fiber": float(item['AMT_NUM8']) if item['AMT_NUM8'] else 0
+                "calories": float(item.get('AMT_NUM1', 0) or 0),
+                "carbohydrates": float(item.get('AMT_NUM6', 0) or 0),
+                "protein": float(item.get('AMT_NUM3', 0) or 0), 
+                "fat": float(item.get('AMT_NUM4', 0) or 0),
+                "sugar": float(item.get('AMT_NUM7', 0) or 0),
+                "sodium": float(item.get('AMT_NUM13', 0) or 0),
+                "fiber": float(item.get('AMT_NUM8', 0) or 0)
             }
         else:
             return {
@@ -658,8 +659,8 @@ def analyze_barcode():
                 else:
                     return jsonify({
                         "status": "error",
-                        "message": "바코드가 감지되지 않았거나 제품 정보를 찾을 수 없습니다.",
-                        "code": "BARCODE_NOT_FOUND"
+                        "message": "제품 정보를 찾을 수 없습니다.",
+                        "code": "PRODUCT_NOT_FOUND"
                     })
             else:
                return jsonify({
