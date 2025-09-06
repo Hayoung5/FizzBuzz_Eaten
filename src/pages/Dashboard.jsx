@@ -35,6 +35,17 @@ const Dashboard = () => {
           </Link>
 
           <Link
+            to="/barcode-analysis"
+            className="flex items-center w-full p-5 border border-gray-200 rounded-2xl bg-white cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div className="text-3xl mr-4">📱</div>
+            <div>
+              <div className="font-bold text-gray-800 text-base">바코드로 영양분석하기</div>
+              <div className="text-sm text-gray-600 mt-1">제품 바코드를 찍어 영양 정보를 확인하세요.</div>
+            </div>
+          </Link>
+
+          <Link
             to="/statistics"
             className="flex items-center w-full p-5 border border-gray-200 rounded-2xl bg-white cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg"
           >

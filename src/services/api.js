@@ -26,6 +26,14 @@ export const photoService = {
       },
     })
     return response.data
+  },
+  analyzeBarcode: async (formData) => {
+    const response = await api.post('/barcode_analy', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
   }
 }
 

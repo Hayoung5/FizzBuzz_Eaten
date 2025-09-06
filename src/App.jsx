@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Analysis from './pages/Analysis'
+import BarcodeAnalysis from './pages/BarcodeAnalysis'
 import Statistics from './pages/Statistics'
 import Report from './pages/Report'
 import UserSetup from './pages/UserSetup'
@@ -23,6 +24,7 @@ function App() {
           <Route path="/pattern-analysis" element={<PatternAnalysis />} />
           <Route path="/report" element={<Report />} />
           <Route path="/analysis" element={<Analysis />} />
+          <Route path="/barcode-analysis" element={<BarcodeAnalysis />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/meal-recommendation" element={<MealRecommendation />} />
           <Route path="/profile" element={<Profile />} />
