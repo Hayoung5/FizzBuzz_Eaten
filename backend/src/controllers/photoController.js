@@ -14,6 +14,7 @@
 
 const FoodLog = require('../models/FoodLog');
 const foodAnalysisService = require('../services/foodAnalysisService');
+const logger = require('../middleware/logger');
 
 /**
  * 음식 사진 분석 API
@@ -23,24 +24,20 @@ const foodAnalysisService = require('../services/foodAnalysisService');
  * @returns {Object} 음식 분석 결과 또는 에러 응답
  */
 const analyzePhoto = async (req, res) => {
-  console.log('=== Photo Analysis Request ===');
-  console.log('Body:', req.body);
-  console.log('File:', req.file);
+  logger.info('Photo Analysis Request', { body: req.body, file: req.file ? { path: req.file.path, size: req.file.size } : null });
   
   const { user_id, time, portion_size } = req.body;
   
   // 필수 필드 검증
   if (!user_id || !time || !req.file) {
-    console.log('Missing required fields:', { user_id, time, file: !!req.file });
+    logger.error('Missing required fields', { user_id, time, file: !!req.file });
     return res.status(400).json({ error: 'Missing required fields' });
   }
   
-  console.log('File path:', req.file.path);
-  console.log('Analysis params:', { user_id, time, portion_size });
+  logger.debug('Analysis params', { user_id, time, portion_size, filePath: req.file.path });
   
   try {
-    // AI 서버를 통한 음식 사진 분석 및 저장
-    console.log('Calling foodAnalysisService.analyzeAndSaveFood...');
+    logger.info('Starting food analysis');
     const analysisResult = await foodAnalysisService.analyzeAndSaveFood({
       user_id,
       time,
@@ -48,17 +45,18 @@ const analyzePhoto = async (req, res) => {
       imagePath: req.file.path
     });
     
-    console.log('Analysis successful:', analysisResult);
+    logger.info('Analysis successful', analysisResult);
     // 성공 응답 (프론트엔드 API 스펙에 맞춤)
     res.json(analysisResult);
     
   } catch (error) {
     // AI 서버 에러를 프론트엔드 API 스펙에 맞게 변환
-    console.error('=== Photo Analysis Error ===');
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    console.error('Error code:', error.code);
-    console.error('Error status:', error.status);
+    logger.error('Photo Analysis Error', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      status: error.status
+    });
     
     if (error.code && error.status) {
       // AI 서버에서 정의된 에러 코드 처리

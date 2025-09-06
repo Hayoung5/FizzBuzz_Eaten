@@ -53,6 +53,14 @@ app.get('/health', async (req, res) => {
   });
 });
 
+// 로그 확인 엔드포인트
+app.get('/logs', (req, res) => {
+  const logger = require('./src/middleware/logger');
+  const lines = parseInt(req.query.lines) || 50;
+  const logs = logger.getLogs(lines);
+  res.json({ logs, total: logs.length });
+});
+
 // 서버 시작
 const startServer = async () => {
   try {
