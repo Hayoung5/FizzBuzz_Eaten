@@ -40,16 +40,6 @@ const kakaoCallback = (req, res) => {
     res.redirect('/auth/callback?success=false&error=server_error');
   }
 };
-    }
-    
-  } catch (error) {
-    console.error('Kakao callback error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Server error' 
-    });
-  }
-};
 
 /**
  * 신규 사용자 추가 정보 등록
