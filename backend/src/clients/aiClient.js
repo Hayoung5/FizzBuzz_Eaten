@@ -25,7 +25,8 @@ class AIClient {
     
     try {
       const formData = new FormData();
-      formData.append('photo', fs.createReadStream(imagePath));
+      formData.append('image', fs.createReadStream(imagePath));
+      formData.append('user_id', 1);
       formData.append('time', time);
       formData.append('portion_size', portion_size);
       const response = await axios.post(
