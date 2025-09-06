@@ -1,0 +1,188 @@
+{
+    "male": {
+        "6-8": {
+            "calories": {
+                "low": 1600,
+                "medium": 1700,
+                "high": 1800
+            },
+            "protein": 30,
+            "carbohydrates": 210,
+            "fat": 50,
+            "sugars": 25,
+            "sodium": 1500,
+            "fiber": 15
+        },
+        "9-11": {
+            "calories": {
+                "low": 1800,
+                "medium": 1900,
+                "high": 2100
+            },
+            "protein": 35,
+            "carbohydrates": 250,
+            "fat": 55,
+            "sugars": 30,
+            "sodium": 1600,
+            "fiber": 18
+        },
+        "12-14": {
+            "calories": {
+                "low": 2000,
+                "medium": 2200,
+                "high": 2400
+            },
+            "protein": 45,
+            "carbohydrates": 300,
+            "fat": 65,
+            "sugars": 35,
+            "sodium": 1800,
+            "fiber": 20
+        },
+        "19-29": {
+            "calories": {
+                "low": 2400,
+                "medium": 2600,
+                "high": 2800
+            },
+            "protein": 65,
+            "carbohydrates": 360,
+            "fat": 75,
+            "sugars": 40,
+            "sodium": 2000,
+            "fiber": 25
+        },
+        "30-49": {
+            "calories": {
+                "low": 2200,
+                "medium": 2400,
+                "high": 2600
+            },
+            "protein": 65,
+            "carbohydrates": 360,
+            "fat": 70,
+            "sugars": 38,
+            "sodium": 1900,
+            "fiber": 24
+        },
+        "50-64": {
+            "calories": {
+                "low": 2000,
+                "medium": 2200,
+                "high": 2400
+            },
+            "protein": 60,
+            "carbohydrates": 350,
+            "fat": 65,
+            "sugars": 35,
+            "sodium": 1800,
+            "fiber": 22
+        },
+        "65+": {
+            "calories": {
+                "low": 1800,
+                "medium": 2000,
+                "high": 2200
+            },
+            "protein": 60,
+            "carbohydrates": 330,
+            "fat": 60,
+            "sugars": 30,
+            "sodium": 1600,
+            "fiber": 20
+        }
+    },
+    "female": {
+        "6-8": {
+            "calories": {
+                "low": 1400,
+                "medium": 1500,
+                "high": 1600
+            },
+            "protein": 25,
+            "carbohydrates": 210,
+            "fat": 45,
+            "sugars": 20,
+            "sodium": 1400,
+            "fiber": 14
+        },
+        "9-11": {
+            "calories": {
+                "low": 1600,
+                "medium": 1700,
+                "high": 1800
+            },
+            "protein": 30,
+            "carbohydrates": 230,
+            "fat": 50,
+            "sugars": 25,
+            "sodium": 1500,
+            "fiber": 16
+        },
+        "12-14": {
+            "calories": {
+                "low": 1800,
+                "medium": 1900,
+                "high": 2000
+            },
+            "protein": 35,
+            "carbohydrates": 260,
+            "fat": 55,
+            "sugars": 30,
+            "sodium": 1600,
+            "fiber": 18
+        },
+        "19-29": {
+            "calories": {
+                "low": 1800,
+                "medium": 2000,
+                "high": 2200
+            },
+            "protein": 55,
+            "carbohydrates": 280,
+            "fat": 65,
+            "sugars": 35,
+            "sodium": 1800,
+            "fiber": 22
+        },
+        "30-49": {
+            "calories": {
+                "low": 1700,
+                "medium": 1900,
+                "high": 2100
+            },
+            "protein": 50,
+            "carbohydrates": 280,
+            "fat": 60,
+            "sugars": 32,
+            "sodium": 1700,
+            "fiber": 20
+        },
+        "50-64": {
+            "calories": {
+                "low": 1600,
+                "medium": 1800,
+                "high": 2000
+            },
+            "protein": 50,
+            "carbohydrates": 270,
+            "fat": 55,
+            "sugars": 30,
+            "sodium": 1600,
+            "fiber": 18
+        },
+        "65+": {
+            "calories": {
+                "low": 1500,
+                "medium": 1600,
+                "high": 1800
+            },
+            "protein": 50,
+            "carbohydrates": 250,
+            "fat": 50,
+            "sugars": 25,
+            "sodium": 1500,
+            "fiber": 16
+        }
+    }
+}

@@ -2,3 +2,4 @@
 venv
 __pycache__
 ai-server-api-spec.md
+node_modules

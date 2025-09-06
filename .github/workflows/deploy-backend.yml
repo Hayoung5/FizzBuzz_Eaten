@@ -1,0 +1,70 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches: [ feature/backend ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy backend with rsync
+      uses: burnett01/rsync-deployments@6.0.0
+      with:
+        switches: -avzr --delete --exclude='.git' --exclude='node_modules' --exclude='*.log' --exclude='.env'
+        path: ./
+        remote_path: /home/ec2-user/nutrition-backend/
+        remote_host: 44.214.236.166
+        remote_user: ec2-user
+        remote_key: ${{ secrets.EC2_SSH_KEY }}
+    
+    - name: Create .env file
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd /home/ec2-user/nutrition-backend/backend
+          cat > .env << 'EOF'
+          DB_HOST=localhost
+          DB_USER=root
+          DB_PASSWORD=
+          DB_NAME=fizzbuzz_eaten
+          PORT=3000
+          AI_SERVER_URL=http://localhost:5000
+          KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          EOF
+    
+    - name: Start backend
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        timeout: 30s
+        script: |
+          #!/bin/bash
+          set -e
+          pkill node || echo "No node process to kill"
+          cd /home/ec2-user/nutrition-backend/backend
+          
+          echo "Checking .env file..."
+          ls -la .env || echo ".env file not found"
+          
+          echo "Installing dependencies..."
+          npm install --silent
+          
+          echo "Starting backend server..."
+          nohup node src/app.js > ../backend.log 2>&1 < /dev/null &
+          disown
+          
+          sleep 3
+          ps aux | grep "node src/app.js" | grep -v grep || echo "Server may not have started"
+          curl -I http://localhost:3000 || echo "Server not responding"
+          echo "Backend deployment completed"

@@ -1,0 +1,669 @@
+openapi: 3.0.0
+info:
+  title: FizzBuzz Eaten API
+  description: AI 기반 음식 분석 및 영양 관리 시스템 API
+  version: 1.0.0
+  contact:
+    name: FizzBuzz Eaten Team
+servers:
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/user_info:
+    post:
+      summary: 사용자 정보 등록
+      description: 나이, 성별, 활동량을 입력받아 사용자를 등록하고 개인별 영양 권장량을 자동 계산
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - age
+                - gender
+                - activity
+              properties:
+                age:
+                  type: integer
+                  description: 나이
+                  example: 25
+                gender:
+                  type: string
+                  enum: [male, female]
+                  description: 성별
+                  example: male
+                activity:
+                  type: string
+                  enum: [low, moderate, high]
+                  description: 활동량
+                  example: high
+      responses:
+        '200':
+          description: 사용자 등록 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    nullable: true
+                    description: 사용자 이름 (OAuth 사용자의 경우 카카오 이름, 일반 사용자는 null)
+                    example: null
+        '400':
+          description: 필수 필드 누락
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required fields"
+
+  /api/user_info/{id}:
+    get:
+      summary: 사용자 정보 조회
+      description: 사용자 ID로 사용자 정보 및 개인별 권장량 조회
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 사용자 ID
+          example: 1
+      responses:
+        '200':
+          description: 사용자 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    nullable: true
+                    description: 사용자 이름
+                    example: "미연동 계정"
+                  age:
+                    type: integer
+                    example: 25
+                  gender:
+                    type: string
+                    example: male
+                  activity:
+                    type: string
+                    example: high
+                  reco_calories:
+                    type: integer
+                    example: 2800
+                  reco_carbs:
+                    type: integer
+                    example: 360
+                  reco_protein:
+                    type: integer
+                    example: 65
+                  reco_fat:
+                    type: integer
+                    example: 75
+                  reco_sugar:
+                    type: integer
+                    example: 40
+                  reco_sodium:
+                    type: integer
+                    example: 2000
+                  reco_fiber:
+                    type: integer
+                    example: 25
+        '404':
+          description: 사용자를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+
+  /api/photo_analy:
+    post:
+      summary: 음식 사진 분석
+      description: 음식 사진을 업로드하여 AI 분석 후 영양정보 추출 및 저장
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - user_id
+                - time
+                - image
+              properties:
+                user_id:
+                  type: integer
+                  description: 사용자 ID
+                  example: 1
+                time:
+                  type: string
+                  format: date-time
+                  description: 섭취 시간
+                  example: "2025-09-05T12:30:00"
+                portion_size:
+                  type: string
+                  description: 예상 제공량
+                  example: "1회 제공량"
+                image:
+                  type: string
+                  format: binary
+                  description: 음식 사진 파일
+      responses:
+        '200':
+          description: 음식 분석 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  log_id:
+                    type: integer
+                    example: 1
+                  food_name:
+                    type: string
+                    example: "김치찌개 외 1개"
+                  nutrition:
+                    type: object
+                    properties:
+                      calories:
+                        type: number
+                        example: 538.5
+                      protein:
+                        type: number
+                        example: 22.7
+                      carbohydrates:
+                        type: number
+                        example: 70.1
+                      fat:
+                        type: number
+                        example: 17.6
+                      fiber:
+                        type: number
+                        example: 7.7
+                      sodium:
+                        type: number
+                        example: 1202.0
+                      sugar:
+                        type: number
+                        example: 9.3
+                  is_processed:
+                    type: boolean
+                    example: false
+                  is_snack:
+                    type: boolean
+                    example: false
+        '400':
+          description: 필수 필드 누락
+        '422':
+          description: 음식 인식 실패
+        '500':
+          description: 서버 오류
+
+  /api/barcode_analy:
+    post:
+      summary: 바코드 사진 분석
+      description: 바코드 이미지를 업로드하여 제품 정보 및 영양성분 분석
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - photo
+                - user_id
+                - time
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  description: 바코드 이미지 파일
+                user_id:
+                  type: integer
+                  description: 사용자 ID
+                  example: 1234
+                time:
+                  type: string
+                  format: date-time
+                  description: 섭취 시간 (ISO 8601)
+                  example: "2025-09-05T15:20:00Z"
+                portion_size:
+                  type: string
+                  description: 섭취량 정보
+                  example: "1개"
+      responses:
+        '200':
+          description: 바코드 분석 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  food_name:
+                    type: string
+                    example: "오리온 초코파이"
+                  portion_size:
+                    type: string
+                    example: "1개 (28g)"
+                  nutrition:
+                    type: object
+                    properties:
+                      calories:
+                        type: number
+                        example: 168
+                      carbohydrates:
+                        type: number
+                        example: 24.5
+                      protein:
+                        type: number
+                        example: 2.1
+                      fat:
+                        type: number
+                        example: 7.2
+                      sugar:
+                        type: number
+                        example: 12.3
+                      sodium:
+                        type: number
+                        example: 95
+                      fiber:
+                        type: number
+                        example: 0.8
+        '400':
+          description: 필수 필드 누락
+        '422':
+          description: 바코드 인식 실패
+        '404':
+          description: 제품 정보 없음
+        '500':
+          description: 서버 오류
+
+  /api/statistics:
+    get:
+      summary: 7일간 영양 통계 조회
+      description: 사용자의 최근 7일간 영양소 섭취 통계 및 개인별 권장량 정보
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: 사용자 ID
+          example: 1
+      responses:
+        '200':
+          description: 통계 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    nullable: true
+                    description: 사용자 이름
+                    example: "미연동 계정"
+                  times:
+                    type: array
+                    items:
+                      type: string
+                      format: date-time
+                    description: 식사 시간 목록
+                    example: ["2025-09-05T12:30:00Z", "2025-09-05T19:15:00Z"]
+                  meal_snack:
+                    type: array
+                    items:
+                      type: integer
+                    description: "[식사 칼로리, 간식 칼로리]"
+                    example: [3500, 400]
+                  processed:
+                    type: array
+                    items:
+                      type: integer
+                    description: "[가공식품 횟수, 자연식품 횟수]"
+                    example: [8, 12]
+                  reco_cal:
+                    type: integer
+                    description: 권장 칼로리
+                    example: 2800
+                  reco_carbo:
+                    type: integer
+                    description: 권장 탄수화물
+                    example: 360
+                  reco_protein:
+                    type: integer
+                    description: 권장 단백질
+                    example: 65
+                  reco_fat:
+                    type: integer
+                    description: 권장 지방
+                    example: 75
+                  reco_sugar:
+                    type: integer
+                    description: 권장 당
+                    example: 40
+                  reco_sodium:
+                    type: integer
+                    description: 권장 나트륨
+                    example: 2000
+                  cal_log:
+                    type: array
+                    items:
+                      type: integer
+                    description: 7일간 일별 칼로리 섭취량
+                    example: [818, 275, 855, 530, 890, 280, 900]
+                  carbo_log:
+                    type: array
+                    items:
+                      type: integer
+                    description: 7일간 일별 탄수화물 섭취량
+                    example: [280, 310, 295, 270, 260, 300, 310]
+                  protein_log:
+                    type: array
+                    items:
+                      type: integer
+                    description: 7일간 일별 단백질 섭취량
+                    example: [60, 70, 65, 55, 50, 68, 72]
+                  fat_log:
+                    type: array
+                    items:
+                      type: integer
+                    description: 7일간 일별 지방 섭취량
+                    example: [45, 52, 50, 40, 42, 55, 60]
+                  sugar_log:
+                    type: array
+                    items:
+                      type: integer
+                    description: 7일간 일별 당 섭취량
+                    example: [20, 22, 18, 25, 30, 28, 27]
+                  sodium_log:
+                    type: array
+                    items:
+                      type: integer
+                    description: 7일간 일별 나트륨 섭취량
+                    example: [1900, 2100, 2200, 1800, 2000, 2300, 2400]
+        '400':
+          description: user_id 필수
+        '404':
+          description: 사용자를 찾을 수 없음
+
+  /api/report:
+    get:
+      summary: AI 건강 리포트 조회
+      description: 사용자의 식습관 분석 및 개선 제안 리포트 생성
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: 사용자 ID
+          example: 1
+      responses:
+        '200':
+          description: 리포트 생성 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    nullable: true
+                    description: 사용자 이름
+                    example: "미연동 계정"
+                  meal_pattern:
+                    type: string
+                    description: 식사 패턴 분석
+                    example: "식사 시간이 비교적 규칙적이나, 늦은 저녁 섭취가 잦습니다."
+                  processed_snack_ratio:
+                    type: string
+                    description: 가공식품/간식 비율 분석
+                    example: "최근 7일간 가공식품 비율은 55%, 간식 비율은 30%입니다."
+                  reco:
+                    type: string
+                    description: 개선 제안
+                    example: "다음 끼니에는 단백질이 풍부한 식품(두부, 계란, 생선)을 포함하면 좋습니다."
+                  ratio:
+                    type: array
+                    items:
+                      type: integer
+                    description: "권장량 대비 섭취 비율 [칼로리, 단백질, 당, 탄수화물, 나트륨] (%)"
+                    example: [90, 75, 80, 120, 110]
+        '400':
+          description: user_id 필수
+        '404':
+          description: 사용자를 찾을 수 없음
+
+  /api/meal_reco:
+    get:
+      summary: AI 식사 추천
+      description: 개인화된 다음 끼니 식사 추천
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: 사용자 ID
+          example: 1
+      responses:
+        '200':
+          description: 식사 추천 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  menu:
+                    type: array
+                    items:
+                      type: string
+                    description: 추천 메뉴 목록
+                    example: 
+                      - "현미밥 + 닭가슴살 구이 + 브로콜리 찜 + 토마토 샐러드"
+                      - "통밀빵 샌드위치 (닭가슴살, 아보카도, 채소) + 당근 스틱"
+                      - "연어 스테이크 + 퀴노아 + 구운 아스파라거스 + 키위"
+                  reason:
+                    type: string
+                    description: 추천 이유 및 분석 결과
+                    example: "사용자의 식사 기록을 분석한 결과, 전반적으로 권장량에 근접하지만 단백질과 나트륨 섭취가 약간 높은 편입니다. 또한 가공식품 섭취 빈도가 높아 자연식 위주의 메뉴를 제안했습니다."
+        '400':
+          description: user_id 필수
+        '404':
+          description: 사용자를 찾을 수 없음
+
+  /api/auth/kakao:
+    get:
+      summary: 카카오 로그인 시작
+      description: 사용자를 카카오 로그인 페이지로 리다이렉트
+      responses:
+        '302':
+          description: 카카오 로그인 페이지로 리다이렉트
+
+  /api/auth/check-user:
+    post:
+      summary: 카카오 사용자 존재 여부 확인
+      description: 카카오 oauth_id로 기존 사용자인지 확인
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oauth_id
+              properties:
+                oauth_id:
+                  type: string
+                  description: 카카오 OAuth ID
+                  example: "4431218711"
+      responses:
+        '200':
+          description: 사용자 존재 여부 확인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists:
+                    type: boolean
+                    description: 사용자 존재 여부
+                    example: true
+                  user_id:
+                    type: integer
+                    nullable: true
+                    description: 사용자 ID (존재할 경우)
+                    example: 1
+        '400':
+          description: oauth_id 필수
+
+  /api/auth/complete-signup:
+    post:
+      summary: 신규 사용자 추가 정보 등록
+      description: 카카오 로그인 후 신규 사용자의 추가 정보를 등록하고 JWT 토큰 발급
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oauth_provider
+                - oauth_id
+                - age
+                - gender
+                - activity
+              properties:
+                oauth_provider:
+                  type: string
+                  example: "kakao"
+                oauth_id:
+                  type: string
+                  example: "4431218711"
+                email:
+                  type: string
+                  nullable: true
+                  example: null
+                name:
+                  type: string
+                  example: "미연동 계정"
+                age:
+                  type: integer
+                  example: 25
+                gender:
+                  type: string
+                  enum: [male, female]
+                  example: "male"
+                activity:
+                  type: string
+                  enum: [low, moderate, high]
+                  example: "high"
+      responses:
+        '200':
+          description: 회원가입 완료
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  token:
+                    type: string
+                    description: JWT 토큰
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user_id:
+                    type: integer
+                    example: 2
+        '400':
+          description: 필수 필드 누락
+
+  /api/auth/me:
+    get:
+      summary: 내 정보 조회
+      description: JWT 토큰으로 현재 로그인한 사용자 정보 조회
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 사용자 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 2
+                  name:
+                    type: string
+                    nullable: true
+                    example: "미연동 계정"
+                  email:
+                    type: string
+                    nullable: true
+                    example: null
+                  age:
+                    type: integer
+                    example: 25
+                  gender:
+                    type: string
+                    example: "male"
+                  activity:
+                    type: string
+                    example: "high"
+        '401':
+          description: 토큰 없음 또는 유효하지 않음
+        '403':
+          description: 토큰 만료
+
+  /api/auth/logout:
+    post:
+      summary: 로그아웃
+      description: 로그아웃 (JWT는 stateless이므로 클라이언트에서 토큰 삭제)
+      responses:
+        '200':
+          description: 로그아웃 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: 에러 메시지
