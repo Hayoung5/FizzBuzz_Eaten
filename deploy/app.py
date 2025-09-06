@@ -604,7 +604,19 @@ def analyze_barcode():
                     return jsonify({
                         "status": "success",
                         "data": result
-                    })      
+                    })
+                else:
+                    return jsonify({
+                        "status": "error",
+                        "message": "바코드가 감지되지 않았거나 제품 정보를 찾을 수 없습니다.",
+                        "code": "ANALYSIS_SERVER_ERROR"
+                    })
+            else:
+               return jsonify({
+                        "status": "error",
+                        "message": "바코드가 감지되지 않았거나 제품 정보를 찾을 수 없습니다.",
+                        "code": "ANALYSIS_SERVER_ERROR"
+                    })       
 
     except Exception as e:
         print(f"Error in analyze_barcode: {str(e)}")
