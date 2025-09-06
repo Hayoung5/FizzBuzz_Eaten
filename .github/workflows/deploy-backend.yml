@@ -67,4 +67,24 @@ jobs:
           sleep 3
           ps aux | grep "node src/app.js" | grep -v grep || echo "Server may not have started"
           curl -I http://localhost:3000 || echo "Server not responding"
+          
+          echo "Configuring nginx..."
+          sudo tee /etc/nginx/nginx.conf > /dev/null << 'NGINX_EOF'
+          user nginx;
+          events { worker_connections 1024; }
+          http {
+            include /etc/nginx/mime.types;
+            server {
+              listen 80;
+              root /var/www/html;
+              location /api/ {
+                proxy_pass http://localhost:3000/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+              }
+            }
+          }
+          NGINX_EOF
+          
+          sudo systemctl reload nginx
           echo "Backend deployment completed"
