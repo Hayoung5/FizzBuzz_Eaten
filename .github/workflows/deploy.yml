@@ -1,0 +1,69 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ feature/frontend ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build
+      run: npm run build
+    
+    - name: Prepare deployment directory
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # Create directory if it doesn't exist
+          sudo mkdir -p /var/www/html
+          # Fix ownership and permissions
+          sudo chown -R nginx:nginx /var/www/html
+          sudo chmod -R 755 /var/www/html
+    
+    - name: Deploy files with rsync
+      uses: burnett01/rsync-deployments@6.0.0
+      with:
+        switches: -avzr --delete --exclude='node_modules' --exclude='*.log' --rsync-path='sudo rsync'
+        path: dist/
+        remote_path: /var/www/html/
+        remote_host: 44.214.236.166
+        remote_user: ec2-user
+        remote_key: ${{ secrets.EC2_SSH_KEY }}
+    
+
+    - name: Setup nginx and restart
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: 44.214.236.166
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # Install nginx if not installed
+          sudo amazon-linux-extras install -y nginx1
+          
+          # Create simple nginx config
+          echo 'events { worker_connections 1024; } http { server { listen 80 default_server; root /var/www/html; index index.html; location / { try_files \$uri \$uri/ /index.html; } location /api/ { proxy_pass http://localhost:3000; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; } } }' | sudo tee /etc/nginx/nginx.conf
+          
+          # Test and restart nginx
+          sudo nginx -t && sudo systemctl enable nginx && sudo systemctl restart nginx
+          
+          # Fix permissions
+          sudo chown -R nginx:nginx /var/www/html
+          sudo chmod -R 755 /var/www/html
