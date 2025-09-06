@@ -7,6 +7,7 @@
 const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
+const logger = require('../middleware/logger');
 
 class AIClient {
   constructor() {
@@ -20,6 +21,8 @@ class AIClient {
    * @returns {Promise<Object>} AI 분석 결과
    */
   async analyzeFood({ imagePath, time, portion_size }) {
+    logger.info('AI analyzeFood request', { imagePath, time, portion_size, baseURL: this.baseURL });
+    
     try {
       const formData = new FormData();
       formData.append('image', fs.createReadStream(imagePath));
@@ -44,11 +47,19 @@ class AIClient {
       }
 
     } catch (error) {
-      console.log(error)
-      console.error('AI Food Analysis Error:', error.message);
+      logger.error('AI Food Analysis Error', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        responseData: error.response?.data,
+        code: error.code,
+        stack: error.stack
+      });
       
       if (error.response?.data?.code) {
         const errorCode = error.response.data.code;
+        logger.info('AI server returned error code', { errorCode, responseData: error.response.data });
+        
         switch (errorCode) {
           case 'FOOD_NOT_DETECTED':
             throw new Error('음식이 감지되지 않았습니다. 음식이 명확히 보이는 사진을 다시 업로드해주세요.');
