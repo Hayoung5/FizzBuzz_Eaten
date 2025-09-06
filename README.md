@@ -1,10 +1,9 @@
 # Eaten : AI 기반 영양 분석 및 건강 관리 플랫폼
-
-Amazon Q Developer을 활용한 음식 사진 분석 및 개인 맞춤형 건강 관리 서비스입니다.
-
 <div align="center">
   <img width="468" height="400" alt="KakaoTalk_20250906_164234483" src="https://github.com/user-attachments/assets/976f9490-6d25-44b7-8985-a774ec246842" />
 </div>
+
+Amazon Q Developer을 활용한 음식 사진 분석 및 개인 맞춤형 건강 관리 서비스입니다.
 ## 📋 목차
 
 - [프로젝트 개요](#-프로젝트-개요)
@@ -170,9 +169,8 @@ npm run dev
 ```
 
 ### 6. 접속
-- 프론트엔드: http://localhost:3001
-- 백엔드 API: http://localhost:3000
-- AI 서버: http://localhost:5000
+- 프론트엔드: [http://localhost:3001](http://44.214.236.166/)
+- 백엔드 API(+AI 서버): [http://localhost:3000](http://44.214.236.166:3000/)
 
 ## 개발 환경 설정
 
