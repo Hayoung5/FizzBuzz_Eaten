@@ -71,7 +71,7 @@ python request.py
 | `/api/v1/analyze-food` | POST | 음식 사진 분석 |
 | `/api/v1/generate-health-report` | POST | 건강 리포트 생성 |
 | `/api/v1/recommend-meal` | POST | 식사 추천 |
-
+| `/api/v1/analyze-barcode` | POST | 바코드 사진 분석 |
 ## 사용 예시
 
 ### 음식 분석
@@ -89,6 +89,18 @@ with open("food_image.jpg", "rb") as f:
     )
 print(response.json())
 ```
+### 바코드 분석
+```python
+import requests
+
+with open("food_image.jpg", "rb") as f:
+    response = requests.post(
+        "http://localhost:5000/api/v1/analyze-barcode",
+        files={'image': f}
+    )
+print(response.json())
+```
+
 
 ## 서버 관리
 
