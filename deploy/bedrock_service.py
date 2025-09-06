@@ -86,3 +86,44 @@ class BedrockService:
         
         result = json.loads(response['body'].read())
         return result['content'][0]['text']
+    
+    def generate_claude_vision_v1(self, image_path, prompt):
+        with Image.open(image_path) as img:
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=85)
+            image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        
+        body = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 1000,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": image_base64
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        response = self.bedrock.invoke_model(
+            modelId=self.model_id,
+            body=json.dumps(body)
+        )
+        
+        result = json.loads(response['body'].read())
+        return result['content'][0]['text']

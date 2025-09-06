@@ -560,7 +560,7 @@ def analyze_barcode():
         - JSON 형식을 정확히 지켜주세요
         """
         
-        barcode_result = bedrock_service.analyze_image(tmp_file_path, prompt)
+        barcode_result = bedrock_service.generate_claude_vision_v1(tmp_file_path, prompt)
 
         # JSON 파싱 시도
         start_idx = barcode_result.find('{')
