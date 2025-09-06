@@ -15,7 +15,7 @@ const { analyzePhoto, analyzeBarcode } = require('../controllers/photoController
 const router = express.Router();
 
 // 음식 사진 분석 (multipart/form-data)
-router.post('/photo_analy', upload.single('photo'), analyzePhoto);
+router.post('/photo_analy', upload.single('image'), analyzePhoto);
 
 // 바코드 사진 분석 (multipart/form-data)
 router.post('/barcode_analy', upload.single('photo'), analyzeBarcode);
