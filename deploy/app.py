@@ -22,16 +22,58 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_food_nutrition(food_name):
+    # SSL 경고 무시
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    
     try:
         base_url = "https://apis.data.go.kr/1471000/FoodNtrCpntDbInfo02/getFoodNtrCpntDbInq02"
         params = {
-            "serviceKey": "392b322a06d187880079454523eef7608de24774e22bd29e0b17b7de3d96bc07",
+            "serviceKey": "0c3a58a00c706c24b262f34ac5a1367467fd6b075a8e2466c8273a064084edb1",
             "FOOD_NM_KR": food_name,
             "numOfRows": 1,
             "type": "json"
         }
 
-        response = requests.get(base_url, params=params)
+        # Postman과 동일한 설정
+        import ssl
+        from requests.adapters import HTTPAdapter
+        from requests.packages.urllib3.util.retry import Retry
+        
+        # SSL 컨텍스트 설정 (Postman 스타일)
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        ssl_context.set_ciphers('DEFAULT@SECLEVEL=1')  # 암호화 레벨 낮춤
+        
+        class PostmanStyleAdapter(HTTPAdapter):
+            def init_poolmanager(self, *args, **kwargs):
+                kwargs['ssl_context'] = ssl_context
+                kwargs['cert_reqs'] = 'CERT_NONE'
+                return super().init_poolmanager(*args, **kwargs)
+        
+        # 재시도 설정
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504]
+        )
+        
+        session = requests.Session()
+        adapter = PostmanStyleAdapter(max_retries=retry_strategy)
+        session.mount('https://', adapter)
+        session.mount('http://', adapter)
+        session.verify = False
+        
+        # Postman 스타일 헤더
+        headers = {
+            'User-Agent': 'PostmanRuntime/7.32.3',
+            'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive'
+        }
+        
+        response = session.get(base_url, params=params, headers=headers, timeout=30)
         response.raise_for_status()
         
         data = response.json()
@@ -60,6 +102,7 @@ def get_food_nutrition(food_name):
         }
 
     except requests.RequestException as e:
+        print(e)
         return {
             "calories": 0,
             "carbohydrates": 0,
@@ -609,13 +652,13 @@ def analyze_barcode():
                     return jsonify({
                         "status": "error",
                         "message": "바코드가 감지되지 않았거나 제품 정보를 찾을 수 없습니다.",
-                        "code": "ANALYSIS_SERVER_ERROR"
+                        "code": "BARCODE_NOT_FOUND"
                     })
             else:
                return jsonify({
                         "status": "error",
-                        "message": "바코드가 감지되지 않았거나 제품 정보를 찾을 수 없습니다.",
-                        "code": "ANALYSIS_SERVER_ERROR"
+                        "message": "API 요청 실패 또는 제품을 찾을 수 없습니다.",
+                        "code": "API_ERROR"
                     })       
 
     except Exception as e:
@@ -624,7 +667,7 @@ def analyze_barcode():
         traceback.print_exc()
         return jsonify({
             "status": "error",
-            "message": "바코드 분석 중 오류가 발생했습니다.",
+            "message": "바코드 인식 중 오류가 발생했습니다.",
             "code": "ANALYSIS_SERVER_ERROR"
         }), 500
 
