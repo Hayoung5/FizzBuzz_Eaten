@@ -37,8 +37,10 @@ jobs:
     
     - name: Deploy to S3
       run: |
-        aws s3 sync dist/ s3://nutrition-app-frontend --delete
+        aws s3 sync dist/ s3://nutrition-app-frontend --delete --cache-control "no-cache, no-store, must-revalidate" --metadata-directive REPLACE
     
     - name: Invalidate CloudFront
       run: |
-        aws cloudfront create-invalidation --distribution-id d1jznem1qqdakq --paths "/*" "/*.html" "/*.js" "/*.css" "/assets/*"
+        aws cloudfront create-invalidation --distribution-id d1jznem1qqdakq --paths "/*"
+        sleep 10
+        aws cloudfront create-invalidation --distribution-id d1jznem1qqdakq --paths "/index.html" "/assets/*"
