@@ -1,6 +1,6 @@
-# FizzBuzz Eaten 🍎 : AI 기반 영양 분석 및 건강 관리 플랫폼
+# Eaten 🍎 : AI 기반 영양 분석 및 건강 관리 플랫폼
 
-Amazon Bedrock Claude 3.5 Sonnet을 활용한 음식 사진 분석 및 개인 맞춤형 건강 관리 서비스입니다.
+Amazon Q Developer을 활용한 음식 사진 분석 및 개인 맞춤형 건강 관리 서비스입니다.
 
 ## 📋 목차
 
@@ -16,72 +16,65 @@ Amazon Bedrock Claude 3.5 Sonnet을 활용한 음식 사진 분석 및 개인 �
 - [기여하기](#-기여하기)
 - [라이선스](#-라이선스)
 
-## 🎯 프로젝트 개요
+## 프로젝트 개요
 
-FizzBuzz Eaten은 사용자가 업로드한 음식 사진을 AI로 분석하여 영양 정보를 제공하고, 개인의 식습관 데이터를 바탕으로 건강 리포트와 맞춤형 식사 추천을 제공하는 종합 영양 관리 플랫폼입니다.
+Eaten은 사용자가 업로드한 음식 사진을 AI로 분석하여 영양 정보를 제공하고, 개인의 식습관 데이터를 바탕으로 건강 리포트와 맞춤형 식사 추천을 제공하는 종합 영양 관리 플랫폼입니다.
 
-### 🎨 주요 특징
+### 주요 특징
 
-- **AI 기반 음식 인식**: Amazon Bedrock Claude 3.5 Sonnet을 활용한 정확한 음식 분석
+- **AI 기반 음식 인식**: vLLM을 활용한 정확한 음식 분석
 - **실시간 영양 분석**: 사진 업로드 즉시 상세한 영양 정보 제공
 - **개인 맞춤형 리포트**: 7일간의 식습관 데이터 기반 건강 분석
 - **스마트 식사 추천**: AI가 분석한 영양 부족분을 고려한 메뉴 제안
 - **바코드 스캔**: 가공식품 바코드 인식을 통한 간편한 영양 정보 입력
-- **카카오 소셜 로그인**: 간편한 회원가입 및 로그인
 
-## ✨ 주요 기능
+## 주요 기능
 
-### 🔍 음식 사진 분석
-- 업로드된 음식 사진을 AI로 분석하여 음식명 자동 인식
-- 예상 제공량 및 상세 영양 정보 (칼로리, 탄수화물, 단백질, 지방, 당류, 나트륨, 식이섬유) 제공
+### 음식 사진 분석
+- 업로드된 음식 사진을 AI로 분석하여 예상 제공량 및 상세 영양 정보 제공
 - 가공식품/간식 여부 자동 판별
 - 다중 음식 인식 지원
+- 식품의약품안전처 식품 영양 성분DB 기반 분석결과 제공
 
-### 📊 건강 리포트 생성
+### 건강 리포트 생성
 - 7일간의 식사 데이터 종합 분석
 - 식사 패턴 및 가공식품 섭취 비율 분석
 - 개인별 권장량 대비 실제 섭취량 비교
 - 개인 맞춤형 건강 개선 방안 제시
 
-### 🍽️ 스마트 식사 추천
-- 최근 3일간의 식사 기록 기반 영양 분석
+### 스마트 식사 추천
 - 부족한 영양소 파악 및 보완 방안 제시
 - 실용적이고 구체적인 식사 메뉴 추천
 - 개인의 활동량과 신체 정보를 고려한 맞춤형 추천
 
-### 📱 바코드 분석
+### 바코드 분석
 - 가공식품 바코드 스캔을 통한 즉시 영양 정보 입력
 - 제품 데이터베이스 연동으로 정확한 영양 성분 제공
 
-### 📈 통계 및 시각화
+### 통계 및 시각화
 - 일별/주별 영양 섭취 현황 차트
 - 권장량 대비 섭취 비율 시각화
-- 식사 패턴 및 트렌드 분석
 
-## 🛠 기술 스택
+## 기술 스택
 
 ### Frontend
-- **React 18** - 사용자 인터페이스
+- **React** - 사용자 인터페이스
 - **Vite** - 빌드 도구 및 개발 서버
 - **Tailwind CSS** - 스타일링
 - **React Router** - 클라이언트 사이드 라우팅
 - **Axios** - HTTP 클라이언트
-- **Chart.js & Recharts** - 데이터 시각화
-- **Lucide React** - 아이콘
+- **Chart.js** - 데이터 시각화
 
 ### Backend
 - **Node.js & Express** - 서버 프레임워크
 - **MySQL** - 관계형 데이터베이스
-- **JWT** - 인증 토큰
 - **Passport.js** - 카카오 OAuth 인증
 - **Multer** - 파일 업로드 처리
 - **Axios** - AI 서버 통신
 
 ### AI/ML
 - **Python Flask** - AI 서버
-- **Amazon Bedrock** - Claude 3.5 Sonnet 모델
-- **Pillow** - 이미지 처리
-- **Boto3** - AWS SDK
+- **Amazon Bedrock** - Claude 4 Sonnet 모델
 
 ### DevOps & Infrastructure
 - **GitHub Actions** - CI/CD 파이프라인
@@ -90,27 +83,13 @@ FizzBuzz Eaten은 사용자가 업로드한 음식 사진을 AI로 분석하여 
 - **Docker** - 컨테이너화
 - **Nginx** - 웹 서버 및 리버스 프록시
 
-## 🏗 시스템 아키텍처
+## 시스템 아키텍처
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React SPA     │    │   Node.js API   │    │   Python AI     │
-│   (Frontend)    │◄──►│   (Backend)     │◄──►│   (AI Server)   │
-│                 │    │                 │    │                 │
-│ • 사용자 인터페이스  │    │ • REST API      │    │ • 음식 사진 분석   │
-│ • 데이터 시각화     │    │ • 인증/인가       │    │ • Amazon Bedrock │
-│ • 반응형 디자인     │    │ • 데이터 처리     │    │ • 영양 정보 추출   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   CloudFront    │    │     MySQL       │    │  Amazon Bedrock │
-│     (CDN)       │    │   (Database)    │    │   (Claude 3.5)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+<div align="center">
+  <img src="./readme/image.png" alt="시스템 아키텍처" width="800">
+</div>
 
-## 🚀 빠른 시작
+## 빠른 시작
 
 ### 사전 요구사항
 - Node.js 18+ 
@@ -172,7 +151,7 @@ npm run dev
 - 백엔드 API: http://localhost:3000
 - AI 서버: http://localhost:5000
 
-## 🔧 개발 환경 설정
+## 개발 환경 설정
 
 ### 환경변수 설정
 
@@ -241,28 +220,7 @@ npm run lint
 | `/api/report` | GET | 건강 리포트 조회 |
 | `/api/meal_reco` | GET | 식사 추천 |
 
-### API 사용 예시
-
-#### 음식 사진 분석
-```javascript
-const formData = new FormData();
-formData.append('user_id', '1');
-formData.append('time', new Date().toISOString());
-formData.append('portion_size', '1인분');
-formData.append('photo', imageFile);
-
-const response = await fetch('/api/photo_analy', {
-  method: 'POST',
-  body: formData
-});
-
-const result = await response.json();
-console.log(result);
-```
-
-자세한 API 문서는 [frontend-api-spec.md](./frontend-api-spec.md)를 참조하세요.
-
-## 🚢 배포
+## 배포
 
 ### GitHub Actions를 통한 자동 배포
 
@@ -325,31 +283,4 @@ FizzBuzz_Eaten/
 └── 📄 README.md
 ```
 
-## 🤝 기여하기
-
-1. 이 저장소를 Fork 합니다
-2. 새로운 기능 브랜치를 생성합니다 (`git checkout -b feature/amazing-feature`)
-3. 변경사항을 커밋합니다 (`git commit -m 'Add some amazing feature'`)
-4. 브랜치에 Push 합니다 (`git push origin feature/amazing-feature`)
-5. Pull Request를 생성합니다
-
-### 개발 가이드라인
-
-- 코드 스타일: ESLint 및 Prettier 설정을 따릅니다
-- 커밋 메시지: [Conventional Commits](https://www.conventionalcommits.org/) 형식을 사용합니다
-- 테스트: 새로운 기능에 대한 테스트를 작성합니다
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
-
-## 🙏 감사의 말
-
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/) - AI 모델 제공
-- [React](https://reactjs.org/) - 프론트엔드 프레임워크
-- [Express.js](https://expressjs.com/) - 백엔드 프레임워크
-- [Tailwind CSS](https://tailwindcss.com/) - CSS 프레임워크
-
----
-
-**FizzBuzz Eaten** - AI로 더 건강한 식습관을 만들어가세요! 🍎✨
+**Eaten** - AI로 더 건강한 식습관을 만들어가세요!
