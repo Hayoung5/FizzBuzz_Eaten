@@ -48,7 +48,7 @@ const UserSetup = () => {
           activity: formData.activity
         }
         
-        const response = await fetch('/api/auth/complete-signup', {
+        const response = await fetch('http://44.214.236.166:3000/api/auth/complete-signup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
