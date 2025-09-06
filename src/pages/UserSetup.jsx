@@ -32,34 +32,15 @@ const UserSetup = () => {
     
     if (Object.keys(newErrors).length === 0) {
       try {
-        const urlParams = new URLSearchParams(window.location.search)
-        const oauthProvider = urlParams.get('provider') || 'kakao'
-        const oauthId = urlParams.get('oauth_id')
-        const email = urlParams.get('email')
-        const name = urlParams.get('name')
-        
         const userData = {
-          oauth_provider: oauthProvider,
-          oauth_id: oauthId,
-          email: email,
-          name: name,
           age: parseInt(formData.age),
           gender: formData.gender,
           activity: formData.activity
         }
         
-        const response = await fetch('http://44.214.236.166:3000/api/auth/complete-signup', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData)
-        })
+        const result = await userService.createUser(userData)
         
-        const result = await response.json()
-        
-        if (result.success) {
-          localStorage.setItem('token', result.token)
+        if (result.user_id) {
           localStorage.setItem('userId', result.user_id)
           navigate('/dashboard')
         }
