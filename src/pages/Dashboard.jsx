@@ -1,15 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { CARD_WIDTH } from '../constants/layout'
 
 const Dashboard = () => {
   const navigate = useNavigate()
   
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-16">
-      <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-lg text-center relative">
+      <div className="bg-white rounded-3xl shadow-lg p-8 text-center relative" style={{width: CARD_WIDTH}}>
         {/* 내정보 아이콘 */}
         <button
           onClick={() => navigate('/profile')}
-          className="absolute top-6 right-6 p-2 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
+          className="absolute top-6 right-6 p-2 bg-lime-100 hover:bg-lime-200 rounded-full transition-colors"
           title="내 정보 보기"
         >
           <span className="text-lg">👤</span>
@@ -25,7 +26,7 @@ const Dashboard = () => {
         <div className="flex flex-col gap-4">
           <Link
             to="/analysis"
-            className="flex items-center w-full p-5 border border-gray-200 rounded-2xl bg-white cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg"
+            className="flex items-center w-full p-5 border border-lime-200 rounded-2xl bg-gradient-to-r from-lime-50 to-green-50 cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg hover:from-lime-100 hover:to-green-100"
           >
             <div className="text-3xl mr-4">📸</div>
             <div>
@@ -36,7 +37,7 @@ const Dashboard = () => {
 
           <Link
             to="/barcode-analysis"
-            className="flex items-center w-full p-5 border border-gray-200 rounded-2xl bg-white cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg"
+            className="flex items-center w-full p-5 border border-lime-200 rounded-2xl bg-gradient-to-r from-lime-50 to-green-50 cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg hover:from-lime-100 hover:to-green-100"
           >
             <div className="text-3xl mr-4">📱</div>
             <div>
@@ -47,7 +48,7 @@ const Dashboard = () => {
 
           <Link
             to="/statistics"
-            className="flex items-center w-full p-5 border border-gray-200 rounded-2xl bg-white cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg"
+            className="flex items-center w-full p-5 border border-lime-200 rounded-2xl bg-gradient-to-r from-lime-50 to-green-50 cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg hover:from-lime-100 hover:to-green-100"
           >
             <div className="text-3xl mr-4">📊</div>
             <div>
@@ -58,7 +59,7 @@ const Dashboard = () => {
 
           <Link
             to="/report"
-            className="flex items-center w-full p-5 border border-gray-200 rounded-2xl bg-white cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg"
+            className="flex items-center w-full p-5 border border-lime-200 rounded-2xl bg-gradient-to-r from-lime-50 to-green-50 cursor-pointer text-left transition-all duration-200 shadow-sm hover:-translate-y-1 hover:shadow-lg hover:from-lime-100 hover:to-green-100"
           >
             <div className="text-3xl mr-4">🥗</div>
             <div>

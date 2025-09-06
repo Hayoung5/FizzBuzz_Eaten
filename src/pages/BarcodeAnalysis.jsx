@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { photoService } from '../services/api'
 import NutritionResult from './NutritionResult'
+import PageLayout from '../components/PageLayout'
+import Button from '../components/Button'
 
 const BarcodeAnalysis = () => {
   const [selectedFile, setSelectedFile] = useState(null)
@@ -37,7 +39,6 @@ const BarcodeAnalysis = () => {
   }
 
   const handleCamera = async () => {
-    // 카메라 지원 여부 체크
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setModalMessage('이 기기는 카메라를 지원하지 않습니다. 파일 업로드를 이용해주세요.')
       setShowModal(true)
@@ -46,7 +47,6 @@ const BarcodeAnalysis = () => {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      // 카메라 스트림을 캔버스로 캡처하는 로직 추가 예정
       console.log('카메라 접근 성공')
     } catch (error) {
       console.error('카메라 접근 실패:', error)
@@ -97,7 +97,6 @@ const BarcodeAnalysis = () => {
     } catch (error) {
       console.error('바코드 분석 실패:', error)
       
-      // API 에러 코드에 따른 메시지 처리
       let errorMessage = '바코드 분석에 실패했습니다.'
       
       if (error.response?.status === 422) {
@@ -125,96 +124,81 @@ const BarcodeAnalysis = () => {
   // 로딩 화면
   if (isAnalyzing) {
     return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-16">
-        <div className="bg-white rounded-3xl shadow-lg p-10 w-full max-w-md text-center">
-          <h1 className="text-xl font-medium mb-4">🔍 바코드 분석 중...</h1>
-          <p className="text-sm text-gray-600 mb-8 leading-relaxed">
-            업로드하신 바코드 이미지를 기반으로 제품 정보와 영양 성분을 분석하고 있습니다.<br/>
-            조금만 기다려주세요! 📱🔍
-          </p>
-          <div className="flex justify-center gap-2 mb-5">
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-          </div>
-          <p className="text-xs text-gray-500">
-            ※ 분석 완료 후 자동으로 결과 화면으로 이동합니다.
-          </p>
+      <PageLayout
+        title="🔍 바코드 분석 중..."
+        subtitle="업로드하신 바코드 이미지를 기반으로 제품 정보와 영양 성분을 분석하고 있습니다. 조금만 기다려주세요! 📱🔍"
+      >
+        <div className="flex justify-center gap-2 mb-5">
+          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
         </div>
-      </div>
+        <p className="text-xs text-gray-500">
+          ※ 분석 완료 후 자동으로 결과 화면으로 이동합니다.
+        </p>
+      </PageLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-16">
-      <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md text-center" style={{minHeight: '500px'}}>
-        <h1 className="text-xl font-medium mb-4">📱 바코드 사진 업로드</h1>
-        <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-          제품의 바코드를 촬영하거나 업로드하면 인공지능이 제품 정보와 영양성분을 자동으로 분석합니다.<br/>
-          아래에서 원하는 방법을 선택해주세요.
-        </p>
-        
-        <div className="flex gap-3 mb-5">
-          <button 
-            onClick={handleCamera}
-            className="flex-1 p-4 rounded-xl border-none cursor-pointer text-base font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200"
-          >
-            바코드 촬영
-          </button>
-          
-          <button 
-            onClick={handleFileUpload}
-            className="flex-1 p-4 rounded-xl border-none cursor-pointer text-base font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200"
-          >
-            사진 업로드
-          </button>
-        </div>
+    <PageLayout
+      title="📱 바코드 사진 업로드"
+      subtitle="제품의 바코드를 촬영하거나 업로드하면 인공지능이 제품 정보와 영양성분을 자동으로 분석합니다."
+      showBackButton={true}
+      onBack={() => window.history.back()}
+    >
+      {/* 업로드 버튼들 */}
+      <div className="flex gap-3 mb-6">
+        <Button variant="blue" onClick={handleCamera} className="flex-1">
+          바코드 촬영
+        </Button>
+        <Button variant="blue" onClick={handleFileUpload} className="flex-1">
+          사진 업로드
+        </Button>
+      </div>
 
-        <div className="h-48 mb-5 flex items-center justify-center bg-gray-50 rounded-xl">
-          {previewUrl ? (
-            <img 
-              src={previewUrl} 
-              alt="바코드 미리보기" 
-              className="max-w-full max-h-full rounded-xl object-contain"
-            />
-          ) : (
-            <div className="text-center">
-              <div className="text-4xl mb-2">📱</div>
-              <p className="text-gray-400 text-sm">바코드 사진을 선택해주세요</p>
-            </div>
-          )}
-        </div>
-
-        {showActions && (
-          <div className="flex gap-3 mb-5">
-            <button 
-              onClick={handleConfirm}
-              className="flex-1 p-3 rounded-xl border-none cursor-pointer font-bold text-sm bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200"
-            >
-              분석하기
-            </button>
-            <button 
-              onClick={handleCancel}
-              className="flex-1 p-3 rounded-xl border-none cursor-pointer font-bold text-sm bg-gray-300 text-gray-700 hover:bg-gray-400 transition-all duration-200"
-            >
-              취소
-            </button>
+      {/* 미리보기 */}
+      <div className="h-48 mb-6 flex items-center justify-center bg-gray-50 rounded-xl">
+        {previewUrl ? (
+          <img 
+            src={previewUrl} 
+            alt="바코드 미리보기" 
+            className="max-w-full max-h-full rounded-xl object-contain"
+          />
+        ) : (
+          <div className="text-center">
+            <div className="text-4xl mb-2">📱</div>
+            <p className="text-gray-400 text-sm">바코드 사진을 선택해주세요</p>
           </div>
         )}
-
-        <div className="bg-blue-50 rounded-xl p-4 mb-4">
-          <p className="text-xs text-blue-700 font-medium mb-2">💡 바코드 촬영 팁</p>
-          <ul className="text-xs text-blue-600 text-left space-y-1">
-            <li>• 바코드가 화면에 선명하게 보이도록 촬영하세요</li>
-            <li>• 조명이 충분한 곳에서 촬영하세요</li>
-            <li>• 바코드 전체가 사진에 포함되도록 하세요</li>
-          </ul>
-        </div>
-
-        <p className="text-xs text-gray-500">
-          ※ 촬영 또는 업로드된 사진은 제품 분석 용도로만 사용됩니다.
-        </p>
       </div>
+
+      {/* 확인/취소 버튼 */}
+      {showActions && (
+        <div className="flex gap-3 mb-6">
+          <Button variant="blue" onClick={handleConfirm} className="flex-1">
+            분석하기
+          </Button>
+          <Button variant="secondary" onClick={handleCancel} className="flex-1">
+            취소
+          </Button>
+        </div>
+      )}
+
+      {/* 바코드 촬영 팁 */}
+      <div className="bg-blue-50 rounded-xl p-4 mb-4">
+        <p className="text-xs text-blue-700 font-medium mb-2">💡 바코드 촬영 팁</p>
+        <ul className="text-xs text-blue-600 text-left space-y-1">
+          <li>• 바코드가 화면에 선명하게 보이도록 촬영하세요</li>
+          <li>• 조명이 충분한 곳에서 촬영하세요</li>
+          <li>• 바코드 전체가 사진에 포함되도록 하세요</li>
+        </ul>
+      </div>
+
+      {/* 안내 문구 */}
+      <p className="text-xs text-gray-500">
+        ※ 촬영 또는 업로드된 사진은 제품 분석 용도로만 사용됩니다.
+      </p>
 
       {/* 에러 모달 */}
       {showModal && (
@@ -222,16 +206,13 @@ const BarcodeAnalysis = () => {
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 text-center shadow-2xl">
             <div className="text-4xl mb-4">⚠️</div>
             <p className="text-gray-800 mb-6 leading-relaxed">{modalMessage}</p>
-            <button 
-              onClick={() => setShowModal(false)}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
+            <Button variant="blue" onClick={() => setShowModal(false)}>
               확인
-            </button>
+            </Button>
           </div>
         </div>
       )}
-    </div>
+    </PageLayout>
   )
 }
 

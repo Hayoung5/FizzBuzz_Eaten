@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { photoService } from '../services/api'
 import NutritionResult from './NutritionResult'
+import PageLayout from '../components/PageLayout'
+import Button from '../components/Button'
 
 const Analysis = () => {
   const [selectedFile, setSelectedFile] = useState(null)
@@ -37,7 +39,6 @@ const Analysis = () => {
   }
 
   const handleCamera = async () => {
-    // 카메라 지원 여부 체크
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setModalMessage('이 기기는 카메라를 지원하지 않습니다. 파일 업로드를 이용해주세요.')
       setShowModal(true)
@@ -46,7 +47,6 @@ const Analysis = () => {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      // 카메라 스트림을 캔버스로 캡처하는 로직 추가 예정
       console.log('카메라 접근 성공')
     } catch (error) {
       console.error('카메라 접근 실패:', error)
@@ -110,84 +110,68 @@ const Analysis = () => {
   // 로딩 화면
   if (isAnalyzing) {
     return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-16">
-        <div className="bg-white rounded-3xl shadow-lg p-10 w-full max-w-md text-center">
-          <h1 className="text-xl font-medium mb-4">🔎 분석 중...</h1>
-          <p className="text-sm text-gray-600 mb-8 leading-relaxed">
-            업로드하신 음식 사진을 기반으로 영양 성분을 분석하고 있습니다.<br/>
-            조금만 기다려주세요! 🍎🥦🍗
-          </p>
-          <div className="flex justify-center gap-2 mb-5">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-          </div>
-          <p className="text-xs text-gray-500">
-            ※ 분석 완료 후 자동으로 결과 화면으로 이동합니다.
-          </p>
+      <PageLayout
+        title="🔎 분석 중..."
+        subtitle="업로드하신 음식 사진을 기반으로 영양 성분을 분석하고 있습니다. 조금만 기다려주세요! 🍎🥦🍗"
+      >
+        <div className="flex justify-center gap-2 mb-5">
+          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
         </div>
-      </div>
+        <p className="text-xs text-gray-500">
+          ※ 분석 완료 후 자동으로 결과 화면으로 이동합니다.
+        </p>
+      </PageLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center items-start pt-16">
-      <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md text-center" style={{minHeight: '500px'}}>
-        <h1 className="text-xl font-medium mb-4">📸 음식 사진 업로드</h1>
-        <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-          인공지능이 사진을 분석하여 음식 종류를 자동으로 인식합니다.<br/>
-          아래에서 원하는 방법을 선택해주세요.
-        </p>
-        
-        <div className="flex gap-3 mb-5">
-          <button 
-            onClick={handleCamera}
-            className="flex-1 p-4 rounded-xl border-none cursor-pointer text-base font-bold bg-green-500 text-white hover:bg-green-600 transition-all duration-200"
-          >
-            사진 촬영
-          </button>
-          
-          <button 
-            onClick={handleFileUpload}
-            className="flex-1 p-4 rounded-xl border-none cursor-pointer text-base font-bold bg-green-500 text-white hover:bg-green-600 transition-all duration-200"
-          >
-            사진 업로드
-          </button>
-        </div>
-
-        <div className="h-48 mb-5 flex items-center justify-center bg-gray-50 rounded-xl">
-          {previewUrl ? (
-            <img 
-              src={previewUrl} 
-              alt="사진 미리보기" 
-              className="max-w-full max-h-full rounded-xl object-contain"
-            />
-          ) : (
-            <p className="text-gray-400 text-sm">사진을 선택해주세요</p>
-          )}
-        </div>
-
-        {showActions && (
-          <div className="flex gap-3 mb-5">
-            <button 
-              onClick={handleConfirm}
-              className="flex-1 p-3 rounded-xl border-none cursor-pointer font-bold text-sm bg-green-500 text-white hover:bg-green-600 transition-all duration-200"
-            >
-              확인
-            </button>
-            <button 
-              onClick={handleCancel}
-              className="flex-1 p-3 rounded-xl border-none cursor-pointer font-bold text-sm bg-gray-300 text-gray-700 hover:bg-gray-400 transition-all duration-200"
-            >
-              취소
-            </button>
-          </div>
-        )}
-
-        <p className="mt-5 text-xs text-gray-500">
-          ※ 촬영 또는 업로드된 사진은 영양 분석 용도로만 사용됩니다.
-        </p>
+    <PageLayout
+      title="📸 음식 사진 업로드"
+      subtitle="인공지능이 사진을 분석하여 음식 종류를 자동으로 인식합니다. 아래에서 원하는 방법을 선택해주세요."
+      showBackButton={true}
+      onBack={() => window.history.back()}
+    >
+      {/* 업로드 버튼들 */}
+      <div className="flex gap-3 mb-6">
+        <Button variant="primary" onClick={handleCamera} className="flex-1">
+          사진 촬영
+        </Button>
+        <Button variant="primary" onClick={handleFileUpload} className="flex-1">
+          사진 업로드
+        </Button>
       </div>
+
+      {/* 미리보기 */}
+      <div className="h-48 mb-6 flex items-center justify-center bg-gray-50 rounded-xl">
+        {previewUrl ? (
+          <img 
+            src={previewUrl} 
+            alt="사진 미리보기" 
+            className="max-w-full max-h-full rounded-xl object-contain"
+          />
+        ) : (
+          <p className="text-gray-400 text-sm">사진을 선택해주세요</p>
+        )}
+      </div>
+
+      {/* 확인/취소 버튼 */}
+      {showActions && (
+        <div className="flex gap-3 mb-6">
+          <Button variant="primary" onClick={handleConfirm} className="flex-1">
+            확인
+          </Button>
+          <Button variant="secondary" onClick={handleCancel} className="flex-1">
+            취소
+          </Button>
+        </div>
+      )}
+
+      {/* 안내 문구 */}
+      <p className="text-xs text-gray-500">
+        ※ 촬영 또는 업로드된 사진은 영양 분석 용도로만 사용됩니다.
+      </p>
 
       {/* 에러 모달 */}
       {showModal && (
@@ -195,16 +179,13 @@ const Analysis = () => {
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 text-center shadow-2xl">
             <div className="text-4xl mb-4">⚠️</div>
             <p className="text-gray-800 mb-6 leading-relaxed">{modalMessage}</p>
-            <button 
-              onClick={() => setShowModal(false)}
-              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-            >
+            <Button variant="primary" onClick={() => setShowModal(false)}>
               확인
-            </button>
+            </Button>
           </div>
         </div>
       )}
-    </div>
+    </PageLayout>
   )
 }
 
